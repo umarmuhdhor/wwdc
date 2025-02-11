@@ -6,68 +6,81 @@ struct StoryDetailView: View {
     @State private var audioPlayer: AVAudioPlayer?
 
     var body: some View {
-        VStack {
-            Image(story.imageName)
-                .resizable()
-                .scaledToFit()
-                .frame(height: 300)
-                .cornerRadius(10)
-                .padding()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text(story.title)
+                    .font(.largeTitle)
+                    .bold()
 
-            Text(story.title)
-                .font(.largeTitle)
-                .bold()
+                Button(action: {
+                    playAudio(fileName: story.audioFileName)
+                }) {
+                    Label("Play Narration", systemImage: "play.circle.fill")
+                        .font(.title2)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
 
-            Button(action: playNarration) {
-                HStack {
-                    Image(systemName: "play.circle.fill")
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                    Text("Dengarkan Narasi")
+                Text(story.narration)
+                    .font(.body)
+
+                Divider()
+
+                ForEach(story.characterDialogues) { dialogue in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(dialogue.characterName):")
+                            .font(.headline)
+
+                        Text(dialogue.dialogue)
+                            .font(.body)
+                        
+                        if let audioFile = dialogue.audioFileName {
+                            Button(action: {
+                                playAudio(fileName: audioFile)
+                            }) {
+                                Label("Play Dialogue", systemImage: "speaker.wave.2.fill")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 5)
+                }
+
+                if let interaction = story.interactiveElement {
+                    Divider()
+                    Text("Interactive Challenge:")
                         .font(.title2)
                         .bold()
+                    Text(interaction.description)
+                        .font(.body)
+                        .padding(.bottom)
                 }
-                .padding()
-            }
-            
-            Spacer()
-            
-            NavigationLink(destination: ARViewContainer()) {
-                Text("Masuk ke AR")
-                    .font(.title2)
-                    .bold()
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
             }
             .padding()
         }
-        .onAppear {
-            prepareAudio()
-        }
     }
 
-    func prepareAudio() {
-        if let path = Bundle.main.path(forResource: "sangkuriang_audio", ofType: "mp3") {
-            let url = URL(fileURLWithPath: path)
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: url)
-                audioPlayer?.prepareToPlay()
-            } catch {
-                print("❌ Gagal memuat audio: \(error)")
-            }
+    func playAudio(fileName: String?) {
+        guard let fileName = fileName, let path = Bundle.main.path(forResource: fileName, ofType: nil) else {
+            print("Audio file not found: \(fileName ?? "Unknown")")
+            return
         }
-    }
-
-    func playNarration() {
-        audioPlayer?.play()
+        
+        let url = URL(fileURLWithPath: path)
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.play()
+        } catch {
+            print("Failed to play audio: \(error.localizedDescription)")
+        }
     }
 }
 
 struct StoryDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryDetailView(story: Story(id: 1, title: "Sangkuriang", imageName: "sangkuriang_thumbnail"))
+        StoryDetailView(story: stories[0])
     }
 }
