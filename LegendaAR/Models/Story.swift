@@ -5,39 +5,27 @@ struct Story: Identifiable {
     let title: String
     let narration: String
     let characterDialogues: [CharacterDialogue]
-    let interactiveElement: InteractiveElement?
-    let audioFileName: String? // Nama file MP3 untuk narasi
+    let audioFileName: String?
+    let backgroundImage: String
 }
 
 struct CharacterDialogue: Identifiable {
     let id = UUID()
     let characterName: String
     let dialogue: String
-    let audioFileName: String? // Nama file MP3 untuk dialog karakter
+    let audioFileName: String?
+    let characterImage: String
 }
 
-struct InteractiveElement {
-    let type: InteractionType
-    let description: String
-}
-
-enum InteractionType {
-    case tapToContinue
-    case arHuntingGame
-    case puzzleChallenge
-    case shakeToReact
-}
-
-// Data Dummy
-let stories: [Story] = [
-    Story(
-        title: "Prologue",
-        narration: "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi...",
-        characterDialogues: [
-            CharacterDialogue(characterName: "Dayang Sumbi", dialogue: "Oh no! My thread has fallen into the bushes!", audioFileName: "dayang_sumbi_1.mp3"),
-            CharacterDialogue(characterName: "Tumang", dialogue: "Princess, here is your thread.", audioFileName: "tumang_1.mp3")
-        ],
-        interactiveElement: InteractiveElement(type: .tapToContinue, description: "Tap to continue the story."),
-        audioFileName: "prologue_narration.mp3"
-    )
-]
+// Opening Scene
+let earlyStory = Story(
+    title: "The Beginning of Sangkuriang's Tale",
+    narration: "In the land of Sunda, there lived a beautiful princess named Dayang Sumbi. One day, while weaving, her thread fell into the bushes...",
+    characterDialogues: [
+        CharacterDialogue(characterName: "Dayang Sumbi", dialogue: "Oh no! My weaving thread fell into the bushes!", audioFileName: "dayang_sumbi_1.mp3", characterImage: "dayang_sumbi"),
+        CharacterDialogue(characterName: "Tumang", dialogue: "I will fetch it for you, my lady.", audioFileName: "tumang_1.mp3", characterImage: "tumang"),
+        CharacterDialogue(characterName: "The King", dialogue: "You have deceived me, Tumang! I banish you from this palace!", audioFileName: "king_1.mp3", characterImage: "king")
+    ],
+    audioFileName: "opening_narration.mp3",
+    backgroundImage: "background_scene1"
+)

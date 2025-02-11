@@ -6,60 +6,76 @@ struct StoryDetailView: View {
     @State private var audioPlayer: AVAudioPlayer?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(story.title)
-                    .font(.largeTitle)
-                    .bold()
+        ZStack {
+            // Background Image
+            Image(story.backgroundImage)
+                .resizable()
+                .scaledToFill()
+                .edgesIgnoringSafeArea(.all)
 
-                Button(action: {
-                    playAudio(fileName: story.audioFileName)
-                }) {
-                    Label("Play Narration", systemImage: "play.circle.fill")
-                        .font(.title2)
+            ScrollView {
+                VStack(alignment: .center, spacing: 20) {
+                    Text(story.title)
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.white)
+                        .shadow(radius: 5)
+
+                    // Play Narration Button
+                    Button(action: {
+                        playAudio(fileName: story.audioFileName)
+                    }) {
+                        Label("Play Narration", systemImage: "play.circle.fill")
+                            .font(.title2)
+                            .padding()
+                            .background(Color.blue.opacity(0.8))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+
+                    Text(story.narration)
+                        .font(.body)
                         .padding()
-                        .background(Color.blue)
+                        .background(Color.black.opacity(0.5))
                         .foregroundColor(.white)
                         .cornerRadius(10)
-                }
 
-                Text(story.narration)
-                    .font(.body)
+                    Divider()
+                    
+                    // Character Dialogues
+                    ForEach(story.characterDialogues) { dialogue in
+                        VStack(alignment: .center, spacing: 10) {
+                            Image(dialogue.characterImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 200)
 
-                Divider()
+                            Text("\(dialogue.characterName):")
+                                .font(.headline)
+                                .foregroundColor(.white)
 
-                ForEach(story.characterDialogues) { dialogue in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("\(dialogue.characterName):")
-                            .font(.headline)
-
-                        Text(dialogue.dialogue)
-                            .font(.body)
-                        
-                        if let audioFile = dialogue.audioFileName {
-                            Button(action: {
-                                playAudio(fileName: audioFile)
-                            }) {
-                                Label("Play Dialogue", systemImage: "speaker.wave.2.fill")
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
+                            Text(dialogue.dialogue)
+                                .font(.body)
+                                .padding()
+                                .background(Color.black.opacity(0.5))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                            
+                            if let audioFile = dialogue.audioFileName {
+                                Button(action: {
+                                    playAudio(fileName: audioFile)
+                                }) {
+                                    Label("Play Dialogue", systemImage: "speaker.wave.2.fill")
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
+                        .padding(.vertical, 5)
                     }
-                    .padding(.vertical, 5)
                 }
-
-                if let interaction = story.interactiveElement {
-                    Divider()
-                    Text("Interactive Challenge:")
-                        .font(.title2)
-                        .bold()
-                    Text(interaction.description)
-                        .font(.body)
-                        .padding(.bottom)
-                }
+                .padding()
             }
-            .padding()
         }
     }
 
@@ -81,6 +97,6 @@ struct StoryDetailView: View {
 
 struct StoryDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        StoryDetailView(story: stories[0])
+        StoryDetailView(story: earlyStory)
     }
 }
