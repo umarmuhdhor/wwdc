@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct StoryListView: View {
+    let stories: [Story] = [earlyStory] // Perbaikan: Dibuat array
+
     var body: some View {
         NavigationView {
             List(stories) { story in

@@ -1,14 +1,12 @@
 import SwiftUI
 
 struct ContentView: View {
-    let stories = [
-        Story(id: 1, title: "Sangkuriang", imageName: "sangkuriang_thumbnail")
-    ]
+    let stories: [Story] = [earlyStory] // Perbaikan agar konsisten dengan StoryListView
 
     var body: some View {
         NavigationView {
             VStack {
-                Text("Legenda Nusantara")
+                Text("Legend of the Archipelago") // Full English version
                     .font(.largeTitle)
                     .bold()
                     .padding()
@@ -16,7 +14,7 @@ struct ContentView: View {
                 List(stories) { story in
                     NavigationLink(destination: StoryDetailView(story: story)) {
                         HStack {
-                            Image(story.imageName)
+                            Image(story.backgroundImage)
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: 80, height: 80)
@@ -30,6 +28,7 @@ struct ContentView: View {
                 }
                 .listStyle(PlainListStyle())
             }
+            .navigationTitle("Sangkuriang Story")
         }
     }
 }
