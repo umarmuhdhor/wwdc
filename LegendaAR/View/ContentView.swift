@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    let stories: [Story] = [earlyStory] // Perbaikan agar konsisten dengan StoryListView
+    let stories: [Story] = [earlyStory] 
 
     var body: some View {
         NavigationView {
