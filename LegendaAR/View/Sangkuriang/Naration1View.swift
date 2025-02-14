@@ -44,11 +44,15 @@ struct Narration1View: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 300, height: 300)
-                    .offset(y: isThreadFalling ? 400 : -200)
-                    .animation(.easeIn(duration: 1.5), value: isThreadFalling)
+                    .offset(y: isThreadFalling ? 180 : 0)
+                    .animation(.easeOut(duration: 3.0), value: isThreadFalling)
                     .onAppear {
-                        Task {
-                            try await Task.sleep(nanoseconds: 2_500_000_000)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation {
+                                isThreadFalling = true
+                            }
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                             isDayangSumbiVisible = true
                             audioManager.playAudio(filename: "DayangSumbi_1")
                         }
@@ -59,12 +63,11 @@ struct Narration1View: View {
                 Image("DayangSumbi_2D")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 400) // Diperbesar
-                    .offset(x: 120, y: 100) // Pindahkan ke kanan bawah, tapi tidak terlalu pojok
+                    .frame(width: 400)
+                    .offset(x: 150, y: 100)
                     .transition(.opacity)
                     .onAppear {
-                        Task {
-                            try await Task.sleep(nanoseconds: 2_000_000_000)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                             isNextButtonVisible = true
                         }
                     }
@@ -72,13 +75,13 @@ struct Narration1View: View {
 
             if isTextVisible {
                 Text(displayedText)
-                    .font(.body) // Ukuran teks lebih kecil
+                    .font(.body)
                     .fontWeight(.semibold)
                     .multilineTextAlignment(.center)
                     .padding()
                     .background(Color.white.opacity(0.6))
                     .cornerRadius(10)
-                    .offset(y: 200) // Letakkan teks di bawah tengah
+                    .offset(y: 180)
                     .onAppear {
                         showWordsGradually()
                     }
@@ -109,12 +112,12 @@ struct Narration1View: View {
         }
         .onAppear {
             audioManager.playAudio(filename: "Narasi1_fix")
-            Task {
-                try await Task.sleep(nanoseconds: 15_000_000_000)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
                 isTextVisible = true
-                try await Task.sleep(nanoseconds: UInt64((audioManager.audioPlayer?.duration ?? 5) * 1_000_000_000))
-                isThreadFalling = true
-                isTextVisible = false // Hapus teks setelah selesai
+                DispatchQueue.main.asyncAfter(deadline: .now() + (audioManager.audioPlayer?.duration ?? 5)) {
+                    isThreadFalling = true
+                    isTextVisible = false // Hapus teks setelah selesai
+                }
             }
         }
     }
@@ -124,8 +127,7 @@ struct Narration1View: View {
         wordIndex = 0
 
         for i in 0..<fullText.count {
-            Task {
-                try await Task.sleep(nanoseconds: UInt64(Double(i) * 0.5 * 1_000_000_000))
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) {
                 displayedText += (i == 0 ? "" : " ") + fullText[i]
             }
         }

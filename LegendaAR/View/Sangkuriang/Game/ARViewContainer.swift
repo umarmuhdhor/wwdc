@@ -21,7 +21,7 @@ struct ARViewContainer: UIViewRepresentable {
 
     private func add3DModel(to arView: ARView) {
         do {
-            let modelEntity = try ModelEntity.load(named: "LegendaModel")
+            let modelEntity = try ModelEntity.load(named: "Benang_3D")
             let anchorEntity = AnchorEntity(plane: .horizontal)
             anchorEntity.addChild(modelEntity)
             arView.scene.addAnchor(anchorEntity)
