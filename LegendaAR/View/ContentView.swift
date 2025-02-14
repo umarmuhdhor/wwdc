@@ -2,9 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     let stories: [Story] = [SangkuriangStory] // Pastikan `SangkuriangStory` adalah instance dari `Story`
+    
+    @State private var showOpeningView = false // Untuk menampilkan OpeningView
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Header dengan judul dan tombol +
                 HStack {
@@ -27,7 +29,9 @@ struct ContentView: View {
 
                 // Daftar Cerita
                 List(stories) { story in
-                    NavigationLink(destination: OpeningView()) {
+                    Button(action: {
+                        showOpeningView = true
+                    }) {
                         HStack {
                             // Gambar Cerita
                             Image(story.backgroundImage)
@@ -49,6 +53,9 @@ struct ContentView: View {
                 .listStyle(PlainListStyle()) // Menghilangkan gaya default List
             }
             .padding(.top, 10) // Memberikan ruang agar tampilan lebih rapi
+        }
+        .fullScreenCover(isPresented: $showOpeningView) {
+            OpeningView(showOpeningView: $showOpeningView) // Kirim binding ke OpeningView
         }
     }
 }
