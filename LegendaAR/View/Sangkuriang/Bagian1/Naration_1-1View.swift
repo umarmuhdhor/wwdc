@@ -111,7 +111,7 @@ struct Narration1View: View {
                         .padding()
                         .background(Color.white.opacity(0.6))
                         .cornerRadius(10)
-                        .offset(y: 180)
+                        .offset(y: 130)
                         .onAppear {
                             showWordsGradually()
                         }
