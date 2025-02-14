@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct StoryListView: View {
-    let stories: [Story] = [earlyStory] // Perbaikan: Dibuat array
+    let stories: [Story] = [SangkuriangStory] // Perbaikan: Dibuat array
 
     var body: some View {
         NavigationView {
             List(stories) { story in
-                NavigationLink(destination: StoryDetailView(story: story)) {
+                NavigationLink(destination: Narration1View()) {
                     Text(story.title)
                         .font(.headline)
                 }

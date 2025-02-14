@@ -1,18 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    let stories: [Story] = [earlyStory] 
+    let stories: [Story] = [SangkuriangStory] 
 
     var body: some View {
         NavigationView {
             VStack {
-                Text("Legend of the Archipelago") // Full English version
-                    .font(.largeTitle)
+                Text("Legend of the Archipelago")
+                    .font(.title)
                     .bold()
                     .padding()
 
                 List(stories) { story in
-                    NavigationLink(destination: StoryDetailView(story: story)) {
+                    NavigationLink(destination: OpeningView()) {
                         HStack {
                             Image(story.backgroundImage)
                                 .resizable()
@@ -28,7 +28,6 @@ struct ContentView: View {
                 }
                 .listStyle(PlainListStyle())
             }
-            .navigationTitle("Sangkuriang Story")
         }
     }
 }

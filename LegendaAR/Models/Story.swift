@@ -17,8 +17,7 @@ struct CharacterDialogue: Identifiable {
     let characterImage: String
 }
 
-// Opening Scene
-let earlyStory = Story(
+let SangkuriangStory = Story(
     title: "The Beginning of Sangkuriang's Tale",
     narration: "In the land of Sunda, there lived a beautiful princess named Dayang Sumbi. One day, while weaving, her thread fell into the bushes...",
     characterDialogues: [
@@ -27,5 +26,5 @@ let earlyStory = Story(
         CharacterDialogue(characterName: "The King", dialogue: "You have deceived me, Tumang! I banish you from this palace!", audioFileName: "king_1.mp3", characterImage: "king")
     ],
     audioFileName: "opening_narration.mp3",
-    backgroundImage: "background_scene1"
+    backgroundImage: "background_narasi1"
 )
