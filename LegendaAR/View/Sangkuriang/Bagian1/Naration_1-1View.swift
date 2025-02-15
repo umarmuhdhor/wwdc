@@ -23,7 +23,7 @@ class AudioPlayerManager: ObservableObject {
 
 struct Narration1View: View {
     @StateObject private var audioManager = AudioPlayerManager()
-    @State private var threadPositiony : CGFloat = 70  // Mulai dari tengah atas
+    @State private var threadPositiony : CGFloat = -50  // Mulai dari tengah atas
     @State private var threadPositionx : CGFloat = 100  // Mulai dari tengah atas
     @State private var isThreadAnimating = false  // Untuk animasi rotasi
     @State private var isDayangSumbiVisible = false
@@ -90,7 +90,6 @@ struct Narration1View: View {
                     .scaledToFit()
                     .frame(width: 150, height: 150)
                     .offset(x : threadPositionx,y: threadPositiony)
-                    .rotationEffect(.degrees(isThreadAnimating ? 360 : 0))
                     .opacity(threadPositiony == -50 ? 0 : 1) // Tampil setelah bergerak
                     .animation(.easeInOut(duration: 3.0), value: threadPositiony)
 
