@@ -5,6 +5,9 @@ struct OpeningView: View {
     @State private var player: AVAudioPlayer?
     @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
+    @State private var displayedText: String = ""
+    @State private var currentIndex: Int = 0
+    let fullText: String = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal."
 
     var body: some View {
         ZStack {
@@ -14,11 +17,14 @@ struct OpeningView: View {
                 CloseButton(isPresented: $showOpeningView)
                 Spacer()
 
-                Text("This is the story behind Mount Tangkuban Perahu...")
+                Text(displayedText)
                     .foregroundColor(.white)
                     .font(.title)
                     .multilineTextAlignment(.center)
                     .padding()
+                    .onAppear {
+                        startTextAnimation()
+                    }
 
                 Spacer()
             }
@@ -32,11 +38,22 @@ struct OpeningView: View {
         }
         .forceLandscape()
         .fullScreenCover(isPresented: $showNarrationView) {
-            Narration1View()
+            Narration1View(showNarrationView: $showNarrationView)
         }
     }
 
-    // 🔹 Memastikan audio tetap berjalan di iPhone asli
+    private func startTextAnimation() {
+        Timer.scheduledTimer(withTimeInterval: 0.09, repeats: true) { timer in
+            if currentIndex < fullText.count {
+                let index = fullText.index(fullText.startIndex, offsetBy: currentIndex)
+                displayedText.append(fullText[index])
+                currentIndex += 1
+            } else {
+                timer.invalidate()
+            }
+        }
+    }
+
     private func setupAudioSession() {
         do {
             let audioSession = AVAudioSession.sharedInstance()
@@ -48,7 +65,7 @@ struct OpeningView: View {
     }
 
     private func playOpeningMusic() {
-        guard let url = Bundle.main.url(forResource: "DayangSumbi_1", withExtension: "mp3") else {
+        guard let url = Bundle.main.url(forResource: "Ketikan", withExtension: "mp3") else {
             print("Audio file not found!")
             return
         }
@@ -57,8 +74,9 @@ struct OpeningView: View {
             player = try AVAudioPlayer(contentsOf: url)
             player?.play()
 
-            // 🔹 Setelah audio selesai, buka Narration1View
-            DispatchQueue.main.asyncAfter(deadline: .now() + (player?.duration ?? 5)) {
+            // Tambahkan jeda 2 detik setelah audio selesai
+            let audioDuration = player?.duration ?? 5
+            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {
                 showNarrationView = true
             }
         } catch {

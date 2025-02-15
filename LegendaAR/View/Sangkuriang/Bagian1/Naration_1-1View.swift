@@ -14,27 +14,31 @@ class AudioPlayerManager: ObservableObject {
             }
         }
     }
+
+    func stopAudio() {
+        audioPlayer?.stop()
+        audioPlayer = nil
+    }
 }
 
 struct Narration1View: View {
     @StateObject private var audioManager = AudioPlayerManager()
-    @State private var isThreadFalling = false
+    @State private var threadPositiony : CGFloat = 70  // Mulai dari tengah atas
+    @State private var threadPositionx : CGFloat = 100  // Mulai dari tengah atas
+    @State private var isThreadAnimating = false  // Untuk animasi rotasi
     @State private var isDayangSumbiVisible = false
     @State private var isNextButtonVisible = false
     @State private var displayedText = ""
-    @State private var wordIndex = 0
+    @State private var currentIndex = 0
     @State private var isTextVisible = false
     @State private var navigateToARView = false
-    
-    let fullText = [
-        "Long", "ago,", "in", "the", "lush", "lands", "of", "Sunda,",
-        "there", "lived", "a", "beautiful", "princess", "named", "Dayang", "Sumbi.",
-        "She", "was", "known", "for", "her", "unmatched", "beauty", "and", "extraordinary",
-        "skill", "in", "weaving."
-    ]
-    
+    @Binding var showNarrationView: Bool
+
+    let fullText = "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi. She was known for her unmatched beauty and extraordinary skill in weaving."
+
     var minimalistButton: some View {
         Button(action: {
+            audioManager.stopAudio()
             withAnimation(.easeInOut(duration: 0.3)) {
                 navigateToARView = true
             }
@@ -69,34 +73,36 @@ struct Narration1View: View {
                     .scaledToFill()
                     .edgesIgnoringSafeArea(.all)
 
-                if isThreadFalling {
-                    Image("thread_spool")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 300, height: 300)
-                        .offset(y: isThreadFalling ? 180 : 0)
-                        .animation(.easeOut(duration: 3.0), value: isThreadFalling)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                withAnimation {
-                                    isThreadFalling = true
-                                }
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                                isDayangSumbiVisible = true
-                                audioManager.playAudio(filename: "DayangSumbi_1")
-                            }
+                VStack {
+                    CloseButton(isPresented: $showNarrationView)
+                        .padding(.top, 20)
+                        .padding(.trailing, 20)
+                        .onTapGesture {
+                            audioManager.stopAudio()
+                            showNarrationView = false
                         }
+                    Spacer()
                 }
 
+                // Benang jatuh dari tengah ke bawah
+                Image("thread_spool")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                    .offset(x : threadPositionx,y: threadPositiony)
+                    .rotationEffect(.degrees(isThreadAnimating ? 360 : 0))
+                    .opacity(threadPositiony == -50 ? 0 : 1) // Tampil setelah bergerak
+                    .animation(.easeInOut(duration: 3.0), value: threadPositiony)
+
                 if isDayangSumbiVisible {
-                    Image("DayangSumbi_2D")
+                    Image("DayangSumbi")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 400)
                         .offset(x: 150, y: 100)
                         .transition(.opacity)
                         .onAppear {
+                            audioManager.playAudio(filename: "DayangSumbi_1")
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                 isNextButtonVisible = true
                             }
@@ -113,7 +119,7 @@ struct Narration1View: View {
                         .cornerRadius(10)
                         .offset(y: 130)
                         .onAppear {
-                            showWordsGradually()
+                            startTextAnimation()
                         }
                 }
 
@@ -136,26 +142,50 @@ struct Narration1View: View {
                 )
             }
             .onAppear {
-                audioManager.playAudio(filename: "Narasi1_fix")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+                audioManager.playAudio(filename: "Narasi1")
+                let narrationDuration = audioManager.audioPlayer?.duration ?? 5
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                     isTextVisible = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + (audioManager.audioPlayer?.duration ?? 5)) {
-                        isThreadFalling = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration - 5) {
                         isTextVisible = false
+                        
+                        // Mulai animasi benang jatuh dari tengah
+                        withAnimation(.easeInOut(duration: 2.0)) {
+                            threadPositiony = 180  // Jatuh ke bawah
+                            threadPositionx = -300
+                        }
+
+                        // Putar benang saat jatuh
+                        withAnimation(.linear(duration: 3.0)) {
+                            isThreadAnimating = true
+                        }
+
+                        // Setelah benang jatuh, tampilkan Dayang Sumbi
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            isDayangSumbiVisible = true
+                        }
                     }
                 }
+            }
+            .onDisappear {
+                audioManager.stopAudio()
             }
             .forceLandscape()
         }
     }
 
-    func showWordsGradually() {
+    private func startTextAnimation() {
         displayedText = ""
-        wordIndex = 0
+        currentIndex = 0
 
-        for i in 0..<fullText.count {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.5) {
-                displayedText += (i == 0 ? "" : " ") + fullText[i]
+        Timer.scheduledTimer(withTimeInterval: 0.07, repeats: true) { timer in
+            if currentIndex < fullText.count {
+                let index = fullText.index(fullText.startIndex, offsetBy: currentIndex)
+                displayedText.append(fullText[index])
+                currentIndex += 1
+            } else {
+                timer.invalidate()
             }
         }
     }
@@ -163,6 +193,6 @@ struct Narration1View: View {
 
 struct Narration1View_Previews: PreviewProvider {
     static var previews: some View {
-        Narration1View()
+        Narration1View(showNarrationView: .constant(true))
     }
 }

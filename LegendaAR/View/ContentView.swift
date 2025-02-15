@@ -1,20 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    let stories: [Story] = [SangkuriangStory] // Pastikan `SangkuriangStory` adalah instance dari `Story`
+    let stories: [Story] = [SangkuriangStory]
     
-    @State private var showOpeningView = false // Untuk menampilkan OpeningView
-
+    @State private var showOpeningView = false
     var body: some View {
         NavigationStack {
             VStack {
-                // Header dengan judul dan tombol +
                 HStack {
                     Text("Legend of the Archipelago")
                         .font(.title)
                         .bold()
 
-                    Spacer() // Menekan tombol "+" ke kanan
+                    Spacer()
 
                     Button(action: {
                         // Fungsi tombol + (akan diisi nanti)
