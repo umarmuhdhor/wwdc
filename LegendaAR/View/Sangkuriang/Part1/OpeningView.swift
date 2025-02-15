@@ -38,7 +38,7 @@ struct OpeningView: View {
         }
         .forceLandscape()
         .fullScreenCover(isPresented: $showNarrationView) {
-            Narration2View(showNarrationView: $showNarrationView)
+            Narration1View(showNarrationView: $showNarrationView)
         }
     }
 

@@ -1,27 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-class AudioPlayerManager: ObservableObject {
-    @Published var audioPlayer: AVAudioPlayer?
-    
-    func playAudio(filename: String) {
-        if let path = Bundle.main.path(forResource: filename, ofType: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
-                audioPlayer?.play()
-            } catch {
-                print("Error playing audio file: \(filename)")
-            }
-        }
-    }
-
-    func stopAudio() {
-        audioPlayer?.stop()
-        audioPlayer = nil
-    }
-}
-
-struct Narration1View: View {
+struct Narration3View: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @State private var threadPositiony : CGFloat = -50  // Mulai dari tengah atas
     @State private var threadPositionx : CGFloat = 100  // Mulai dari tengah atas
@@ -32,38 +12,10 @@ struct Narration1View: View {
     @State private var currentIndex = 0
     @State private var isTextVisible = false
     @State private var navigateToARView = false
+    @State private var navigateToNextScene = false
     @Binding var showNarrationView: Bool
 
-    let fullText = "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi. She was known for her unmatched beauty and extraordinary skill in weaving."
-
-    var minimalistButton: some View {
-        Button(action: {
-            audioManager.stopAudio()
-            withAnimation(.easeInOut(duration: 0.3)) {
-                navigateToARView = true
-            }
-        }) {
-            HStack(spacing: 8) {
-                Text("Find the Thread")
-                    .font(.system(size: 16, weight: .medium))
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .foregroundColor(.white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(
-                Capsule()
-                    .fill(Color.black.opacity(0.5))
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                    )
-            )
-            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
-        }
-        .transition(.opacity)
-    }
+    let fullText = "Sangkuriang grew into a brave and strong young man. He often went hunting in the forest, accompanied by Tumang, unaware that Tumang was his father."
 
     var body: some View {
         NavigationView {
@@ -127,18 +79,19 @@ struct Narration1View: View {
                         Spacer()
                         HStack {
                             Spacer()
-                            minimalistButton
-                                .padding(.trailing, 30)
-                                .padding(.bottom, 30)
+                            NextButton(title: "Next") {
+                                audioManager.stopAudio() // Hentikan audio sebelum navigasi
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    navigateToNextScene = true
+                                }
+                            }
+                            .padding(.trailing, 30)
+                            .padding(.bottom, 30)
                         }
                     }
                 }
 
-                NavigationLink(
-                    destination: ARViewContainer(),
-                    isActive: $navigateToARView,
-                    label: { EmptyView() }
-                )
+                
             }
             .onAppear {
                 audioManager.playAudio(filename: "Narasi1")
@@ -188,10 +141,31 @@ struct Narration1View: View {
             }
         }
     }
+    
+    private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
+        audioManager.playAudio(filename: audio)
+        isTextVisible = true
+        displayedText = ""
+        
+        var index = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+            if index < text.count {
+                let character = text[text.index(text.startIndex, offsetBy: index)]
+                displayedText.append(character)
+                index += 1
+            } else {
+                timer.invalidate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    isTextVisible = false
+                    completion()
+                }
+            }
+        }
+    }
 }
 
-struct Narration1View_Previews: PreviewProvider {
+struct Narration3View_Previews: PreviewProvider {
     static var previews: some View {
-        Narration1View(showNarrationView: .constant(true))
+        Narration3View(showNarrationView: .constant(true))
     }
 }

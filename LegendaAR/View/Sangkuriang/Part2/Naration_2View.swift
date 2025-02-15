@@ -56,7 +56,7 @@ struct Narration2View: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 150)
-                        .offset(x: 250, y: 160)
+                        .offset(x: 230, y: 160)
                         .transition(.opacity)
                 }
                 
@@ -105,13 +105,7 @@ struct Narration2View: View {
             .onDisappear {
                 audioManager.stopAudio() // Hentikan semua audio saat halaman berubah
             }
-            .background(
-                NavigationLink(
-                    destination: ARViewContainer(),
-                    isActive: $navigateToNextScene,
-                    label: { EmptyView() }
-                )
-            )
+            
         }
     }
     

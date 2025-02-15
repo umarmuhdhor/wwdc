@@ -120,13 +120,7 @@ struct Narration1_2View: View {
             .onAppear {
                 startScene()
             }
-            .background(
-                NavigationLink(
-                    destination: ARViewContainer(),
-                    isActive: $navigateToARView,
-                    label: { EmptyView() }
-                )
-            )
+            
         }
     }
     
