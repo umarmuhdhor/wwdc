@@ -5,115 +5,116 @@ import Combine
 
 class TreasureHuntState: ObservableObject {
     @Published var foundCount: Int = 0
+    @Published var scale: Float = 0.12 // Skala default
     let totalCount: Int = 3
+    static var cachedModel: ModelEntity?
+    
+    static func loadModel() -> ModelEntity? {
+        do {
+            let model = try ModelEntity.loadModel(named: "Benang_3D")
+            let scale: Float = 0.12
+            model.scale = SIMD3<Float>(scale, scale, scale)
+            model.generateCollisionShapes(recursive: true)
+            model.name = "mesh1"
+            return model
+        } catch {
+            print("Failed to load model: \(error.localizedDescription)")
+            return nil
+        }
+    }
 }
-
 struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var state: TreasureHuntState
     
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
-        arView.translatesAutoresizingMaskIntoConstraints = false
         
         let config = ARWorldTrackingConfiguration()
         config.planeDetection = [.horizontal]
         arView.session.run(config)
         
-        // Add tap gesture
-        let tapGesture = UITapGestureRecognizer(target: context.coordinator,
-                                               action: #selector(Coordinator.handleTap))
+        let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         arView.addGestureRecognizer(tapGesture)
         
-        // Setup initial models
-        setupInitialModels(in: arView)
-        
-       
+        // Spawn the first thread
+        DispatchQueue.main.async {
+            context.coordinator.spawnNextThread(in: arView)
+        }
         
         return arView
     }
     
-    func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
-    }
-    
-    func updateUIView(_ uiView: ARView, context: Context) {}
-    
-    private func setupInitialModels(in arView: ARView) {
-        let positions: [SIMD3<Float>] = [
-            SIMD3<Float>(-0.9, 0.1, -0.005),
-            SIMD3<Float>(0.0, 0.05, -0.3),
-            SIMD3<Float>(0.4, 0.05, -0.5)
-        ]
-        
-        for position in positions {
-            placeHiddenModel(at: position, in: arView)
+    func updateUIView(_ uiView: ARView, context: Context) {
+        // Update scale when state.scale changes
+        if let currentThread = context.coordinator.currentThread {
+            currentThread.scale = SIMD3<Float>(state.scale, state.scale, state.scale)
         }
     }
     
-    private func placeHiddenModel(at position: SIMD3<Float>, in arView: ARView) {
-        do {
-            let anchorEntity = AnchorEntity(plane: .horizontal)
-            let modelEntity = try ModelEntity.load(named: "Benang_3D")
-            
-            let scale: Float = 0.12
-            modelEntity.scale = SIMD3<Float>(scale, scale, scale)
-            modelEntity.position = position
-            
-            // Hide model initially
-            modelEntity.isEnabled = true
-            
-            // Add collision component for tap detection
-            modelEntity.generateCollisionShapes(recursive: true)
-            modelEntity.name = "hiddenBenang" // Pastikan nama ini konsisten
-            
-            anchorEntity.addChild(modelEntity)
-            arView.scene.addAnchor(anchorEntity)
-            
-            // Debug: Log posisi benang
-            print("📍 Benang ditempatkan di posisi: \(position)")
-            print("🟢 AnchorEntity ditambahkan ke scene")
-            print("🟢 ModelEntity ditambahkan ke AnchorEntity")
-            
-        } catch {
-            print("❌ Gagal memuat model 3D: \(error)")
-        }
-    }
-    
-    class Coordinator: NSObject {
+    class Coordinator: NSObject, ARSessionDelegate {
         var parent: ARViewContainer
+        var currentThread: ModelEntity?
         
         init(parent: ARViewContainer) {
             self.parent = parent
+            super.init()
         }
         
-        
-        
-        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
-            guard let arView = recognizer.view as? ARView else {
-                print("❌ Tidak bisa mendapatkan ARView dari gesture recognizer")
+        // Function to spawn a new thread at a random position
+        func spawnNextThread(in arView: ARView) {
+            guard parent.state.foundCount < parent.state.totalCount else {
+                print("All threads found!")
                 return
             }
             
-            let tapLocation = recognizer.location(in: arView)
-            
-            if let entity = arView.entity(at: tapLocation) {
-                let modelEntity = entity as? ModelEntity ?? entity.children.compactMap { $0 as? ModelEntity }.first
-                
-                guard let foundEntity = modelEntity else {
-                    print("❌ Tidak ada ModelEntity yang valid dalam entity yang diklik")
-                    return
-                }
-
-                print("🖐️ Tap terdeteksi pada entitas: \(foundEntity.name)")
-
-                if foundEntity.name == "hiddenBenang" {
-                    foundEntity.isEnabled = false // Sembunyikan setelah ditemukan
-                    parent.state.foundCount += 1
-                    print("🎉 Benang ditemukan! Total ditemukan: \(parent.state.foundCount)")
-                }
+            if TreasureHuntState.cachedModel == nil {
+                TreasureHuntState.cachedModel = TreasureHuntState.loadModel()
             }
-
+            
+            guard let model = TreasureHuntState.cachedModel?.clone(recursive: true) else {
+                print("Failed to clone model")
+                return
+            }
+            
+            // Generate a random position
+            let randomPosition = SIMD3<Float>(
+                Float.random(in: -0.5...0.5),
+                Float.random(in: 0...0.2),
+                Float.random(in: -0.5...0.5)
+            )
+            model.position = randomPosition
+            model.isEnabled = true
+            model.scale = SIMD3<Float>(parent.state.scale, parent.state.scale, parent.state.scale) // Set initial scale
+            
+            // Add the model to the scene
+            let anchorEntity = AnchorEntity(world: randomPosition)
+            anchorEntity.addChild(model)
+            arView.scene.addAnchor(anchorEntity)
+            
+            currentThread = model
+            print("Thread spawned at position: \(randomPosition)")
         }
-
+        
+        @objc func handleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let arView = recognizer.view as? ARView,
+                  let currentThread = currentThread else { return }
+            
+            let location = recognizer.location(in: arView)
+            
+            // Check if the tap hits the current thread
+            if let entity = arView.entity(at: location), entity == currentThread {
+                // Remove the current thread
+                entity.removeFromParent()
+                parent.state.foundCount += 1
+                print("Thread found! Moving to the next one...")
+                
+                // Spawn the next thread
+                spawnNextThread(in: arView)
+            }
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
     }
 }
