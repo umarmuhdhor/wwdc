@@ -8,6 +8,7 @@ struct Narration3View: View {
     @State private var isNextButtonVisible = false
     @State private var isDayangSumbiVisible = false
     @State private var isSangkuriangVisible = false
+    @State private var navigateToNextScene = false
     @Binding var showNarrationView: Bool
     
     let narrationText = "Sangkuriang grew into a brave and strong young man. He often went hunting in the forest, accompanied by Tumang, unaware that Tumang was his father."
@@ -70,6 +71,7 @@ struct Narration3View: View {
                             NextButton(title: "Next") {
                                 audioManager.stopAudio()
                                 showNarrationView = false
+                                navigateToNextScene = true
                             }
                             .padding(.trailing, 30)
                             .padding(.bottom, 30)
@@ -97,6 +99,9 @@ struct Narration3View: View {
             }
             .onDisappear {
                 audioManager.stopAudio()
+            }
+            .fullScreenCover(isPresented: $navigateToNextScene) {
+                Narration5View(showNarrationView: $navigateToNextScene)
             }
             .forceLandscape()
         }

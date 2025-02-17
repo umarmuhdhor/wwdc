@@ -14,9 +14,9 @@ struct Narration2View: View {
     
     @Binding var showNarrationView: Bool
     
-    let fullTextSangPrabu1 = "Sang Prabu: \"Dayang Sumbi! Who is the man who has made you pregnant?\""
-    let fullTextTumang = "Tumang: \"Forgive me, Your Majesty, but I am the one who has committed this forbidden act.\""
-    let fullTextSangPrabu2 = "Sang Prabu: \"You dare dishonor the kingdom? I curse you to become a dog!\""
+    let fullTextSangPrabu1 = "Dayang Sumbi! Who is the man who has made you pregnant?"
+    let fullTextTumang = "Forgive me, Your Majesty, but I am the one who has committed this forbidden act."
+    let fullTextSangPrabu2 = "You dare dishonor the kingdom? I curse you to become a dog"
     
     var body: some View {
         NavigationView {
@@ -104,6 +104,8 @@ struct Narration2View: View {
             }
             .onDisappear {
                 audioManager.stopAudio()
+            }.fullScreenCover(isPresented: $navigateToNextScene) {
+                Narration3View(showNarrationView: $navigateToNextScene)
             }
         }
     }

@@ -16,9 +16,16 @@ struct Narration1_2View: View {
     @State private var isThreadTransferred = false
     @State private var showOpeningView2 = false
     
+    // Quiz states
+    @State private var showQuiz = false
+    @State private var timeRemaining = 10
+    @State private var timer: Timer?
+    @State private var quizAnswered = false
+    @State private var showIncorrectAnswer = false
+    
     // Constants for dialogue
-    private let tumangDialogue = "Tumang: \"Dayang Sumbi, here is your thread.\""
-    private let dayangDialogue = "Dayang Sumbi: \"Thank you, Tumang. As I promised, I will marry you.\""
+    private let tumangDialogue = "Dayang Sumbi, here is your thread"
+    private let dayangDialogue = "Thank you, Tumang. As I promised, I will marry you."
     
     @Binding var showNarrationView: Bool
     
@@ -69,6 +76,66 @@ struct Narration1_2View: View {
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.1)
                     }
                     
+                    // Quiz overlay
+                    if showQuiz {
+                        Color.black
+                            .opacity(0.7)
+                            .edgesIgnoringSafeArea(.all)
+                        
+                        VStack(spacing: 20) {
+                            Text("Waktu tersisa: \(timeRemaining) detik")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                            
+                            Text("Apa yang harus dilakukan Dayang Sumbi setelah mengetahui yang mengambil benangnya adalah seorang pesuruhnya?")
+                                .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.white)
+                                .padding(.horizontal)
+                            
+                            VStack(spacing: 15) {
+                                Button(action: {
+                                    handleAnswer(correct: true)
+                                }) {
+                                    Text("A. Memenuhi janjinya")
+                                        .font(.title3)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.blue.opacity(0.6))
+                                        .cornerRadius(10)
+                                }
+                                
+                                Button(action: {
+                                    handleAnswer(correct: false)
+                                }) {
+                                    Text("B. Mengingkari janjinya dan menolaknya mentah-mentah")
+                                        .font(.title3)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.blue.opacity(0.6))
+                                        .cornerRadius(10)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    
+                    // Incorrect answer overlay
+                    if showIncorrectAnswer {
+                        Color.black
+                            .opacity(0.7)
+                            .edgesIgnoringSafeArea(.all)
+                        
+                        Text("Jawaban Salah! Dayang Sumbi harus memenuhi janjinya.")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.red.opacity(0.6))
+                            .cornerRadius(10)
+                    }
+                    
                     // Dialogue Text Views
                     if isTextVisible || isDayangTextVisible {
                         DialogueTextView(text: displayedText)
@@ -109,7 +176,7 @@ struct Narration1_2View: View {
         }
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showOpeningView2) {
-            OpeningView2(showOpeningView: $showOpeningView2) 
+            OpeningView2(showOpeningView: $showOpeningView2)
         }
     }
     
@@ -138,7 +205,36 @@ struct Narration1_2View: View {
         ) {
             isThreadTransferred = true
             isThreadVisible = false
+            startQuiz()
+        }
+    }
+    
+    private func startQuiz() {
+        showQuiz = true
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                handleAnswer(correct: false)
+            }
+        }
+    }
+    
+    private func handleAnswer(correct: Bool) {
+        timer?.invalidate()
+        timer = nil
+        
+        if correct {
+            showQuiz = false
             playDayangSumbiDialogue()
+        } else {
+            showQuiz = false
+            showIncorrectAnswer = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                showIncorrectAnswer = false
+                playDayangSumbiDialogue()
+            }
         }
     }
     
@@ -156,8 +252,6 @@ struct Narration1_2View: View {
         }
     }
 }
-
-
 
 struct Narration_2View_Previews: PreviewProvider {
     static var previews: some View {
