@@ -3,32 +3,34 @@ import AVFoundation
 
 struct Narration1View: View {
     @StateObject private var audioManager = AudioPlayerManager()
-    @State private var coverScaleX: CGFloat = 1.0  // Tirai awalnya penuh
-    @State private var threadPositiony : CGFloat = -50  // Mulai dari tengah atas
-    @State private var threadPositionx : CGFloat = 100  // Mulai dari tengah atas
-    @State private var isThreadAnimating = false  // Untuk animasi rotasi
+    @State private var coverScaleX: CGFloat = 1.0
+    @State private var threadPositiony: CGFloat = -50
+    @State private var threadPositionx: CGFloat = 100
+    @State private var isThreadAnimating = false
     @State private var isDayangSumbiVisible = false
     @State private var isNextButtonVisible = false
+    @State private var showGameView = true
     @State private var displayedText = ""
     @State private var currentIndex = 0
     @State private var isTextVisible = false
+    @State private var isDayangDialogueVisible = false
     @State private var navigateToARView = false
     @Binding var showNarrationView: Bool
     @StateObject private var treasureState = TreasureHuntState()
 
     let fullText = "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi. She was known for her unmatched beauty and extraordinary skill in weaving."
+    let dayangDialogue = "Oh no! My thread has fallen into the bushes! If someone retrieves it for me, if it's a woman, I will make her my lifelong sister, and if it's a man, I will marry him."
 
     var body: some View {
         NavigationView {
             GeometryReader { geo in
                 ZStack {
-                    
                     Image("background_narasi1")
                         .resizable()
                         .scaledToFill()
                         .edgesIgnoringSafeArea(.all)
                     
-                    // Layer untuk efek layar terbuka dari tengah
+                    // Curtain effect
                     HStack {
                         Rectangle()
                             .fill(Color.black)
@@ -39,13 +41,14 @@ struct Narration1View: View {
                             .frame(width: geo.size.width / 2)
                             .offset(x: coverScaleX == 1.0 ? 0 : geo.size.width / 2)
                     }
-                    .animation(.easeOut(duration: 6.0), value: coverScaleX)
+                    .animation(.easeOut(duration: 3.0), value: coverScaleX)
                     .onAppear {
-                        withAnimation(.easeOut(duration: 6.0)) {
-                            coverScaleX = 0.0  // Menutup layar seperti tirai dari tengah ke samping
+                        withAnimation(.easeOut(duration: 3.0)) {
+                            coverScaleX = 0.0
                         }
                     }
 
+                    // Close button
                     VStack {
                         CloseButton(isPresented: $showNarrationView)
                             .padding(.top, geo.size.height * 0.02)
@@ -57,51 +60,61 @@ struct Narration1View: View {
                         Spacer()
                     }
 
-                    // Benang jatuh (Responsive)
+                    // Thread
                     Image("thread_spool")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: geo.size.width * 0.2) // Ukuran 20% dari lebar layar
+                        .frame(width: geo.size.width * 0.2)
                         .offset(
-                            x: threadPositionx * geo.size.width / 390, // Sesuaikan dengan lebar layar
-                            y: threadPositiony * geo.size.height / 844 // Sesuaikan dengan tinggi layar
+                            x: threadPositionx * geo.size.width / 390,
+                            y: threadPositiony * geo.size.height / 844
                         )
                         .opacity(threadPositiony == -50 ? 0 : 1)
                         .animation(.easeInOut(duration: 3.0), value: threadPositiony)
 
-                    // Dayang Sumbi (Responsive)
+                    // Dayang Sumbi
                     if isDayangSumbiVisible {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.5) // 50% dari lebar layar
+                            .frame(width: geo.size.width * 0.5)
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                             .transition(.opacity)
                             .onAppear {
-                                audioManager.playAudio(filename: "DayangSumbi_1")
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    isNextButtonVisible = true
+                                audioManager.playAudio(filename: "DayangSumbi1_1")
+                                isDayangDialogueVisible = true
+                                DialogueManager.playDialogue(
+                                    text: dayangDialogue,
+                                    audio: "DayangSumbi1_1",
+                                    audioManager: audioManager,
+                                    displayedText: $displayedText,
+                                    isTextVisible: $isDayangDialogueVisible
+                                ) {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                        isNextButtonVisible = true
+                                    }
                                 }
                             }
                     }
 
-                    // Teks Narasi (Responsive)
+                    // Narration text
                     if isTextVisible {
-                        Text(displayedText)
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .frame(width: geo.size.width * 0.95) // 80% dari lebar layar
-                            .background(Color.white.opacity(0.6))
-                            .cornerRadius(10)
-                            .offset(y: geo.size.height * 0.35) // Sesuaikan dengan tinggi layar
+                        DialogueTextView(text: displayedText)
+                            .frame(width: geo.size.width * 0.95)
+                            .offset(y: geo.size.height * 0.35)
                             .onAppear {
                                 startTextAnimation()
                             }
                     }
+                    
+                    // Dayang's dialogue
+                    if isDayangDialogueVisible {
+                        DialogueTextView(text: displayedText)
+                            .frame(width: geo.size.width * 0.95)
+                            .offset(y: geo.size.height * 0.35)
+                    }
 
-                    // Tombol Next (Responsive)
+                    // Next button
                     if isNextButtonVisible {
                         VStack {
                             Spacer()
@@ -118,13 +131,12 @@ struct Narration1View: View {
                             }
                         }
                     }
-
+                    
                     NavigationLink(
-                        destination: ARGameView(state: treasureState)
+                        destination: ARThreadGameView(state: treasureState)
                             .edgesIgnoringSafeArea(.all),
-                        isActive: $navigateToARView,
-                        label: { EmptyView() }
-                    )
+                        isActive: $navigateToARView
+                    ) { EmptyView() }
                 }
                 .onAppear {
                     audioManager.playAudio(filename: "Narasi1")
@@ -135,13 +147,11 @@ struct Narration1View: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration - 5) {
                             isTextVisible = false
 
-                            // Benang jatuh lebih adaptif
                             withAnimation(.easeInOut(duration: 1.0)) {
-                                threadPositiony = geo.size.height * 0.75  // 20% dari tinggi layar
-                                threadPositionx = geo.size.width * -0.25  // 30% ke kiri
+                                threadPositiony = geo.size.height * 0.75
+                                threadPositionx = geo.size.width * -0.25
                             }
 
-                            // Putar benang saat jatuh
                             withAnimation(.linear(duration: 3.0)) {
                                 isThreadAnimating = true
                             }
@@ -161,20 +171,10 @@ struct Narration1View: View {
     }
 
     private func startTextAnimation() {
-        displayedText = ""
-        currentIndex = 0
-
-        Timer.scheduledTimer(withTimeInterval: 0.07, repeats: true) { timer in
-            if currentIndex < fullText.count {
-                let index = fullText.index(fullText.startIndex, offsetBy: currentIndex)
-                displayedText.append(fullText[index])
-                currentIndex += 1
-            } else {
-                timer.invalidate()
-            }
-        }
+        TextAnimation.animateText(text: fullText, displayedText: $displayedText) {}
     }
 }
+
 
 struct Narration1View_Previews: PreviewProvider {
     static var previews: some View {

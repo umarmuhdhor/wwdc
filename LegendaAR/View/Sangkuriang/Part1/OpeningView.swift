@@ -2,12 +2,11 @@ import SwiftUI
 import AVFoundation
 
 struct OpeningView: View {
-    @State private var player: AVAudioPlayer?
+    @StateObject private var audioManager = AudioPlayerManager()
     @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
-    @State private var displayedText: String = ""
-    @State private var currentIndex: Int = 0
-    let fullText: String = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal."
+    @State private var displayedText = ""
+    let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
 
     var body: some View {
         ZStack {
@@ -15,6 +14,10 @@ struct OpeningView: View {
 
             VStack {
                 CloseButton(isPresented: $showOpeningView)
+                    .onTapGesture {
+                        audioManager.stopAudio()
+                        showOpeningView = false
+                    }
                 Spacer()
 
                 Text(displayedText)
@@ -23,64 +26,57 @@ struct OpeningView: View {
                     .multilineTextAlignment(.center)
                     .padding()
                     .onAppear {
-                        startTextAnimation()
+                        startAnimation()
                     }
 
+                Spacer()
                 Spacer()
             }
         }
         .onAppear {
-            setupAudioSession()
-            playOpeningMusic()
+            setupAndPlay()
         }
         .onDisappear {
-            player?.stop()
+            audioManager.stopAudio()
         }
         .forceLandscape()
         .fullScreenCover(isPresented: $showNarrationView) {
-            Narration5View(showNarrationView: $showNarrationView)
+            Narration1View(showNarrationView: $showNarrationView)
         }
     }
-
-    private func startTextAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 0.09, repeats: true) { timer in
-            if currentIndex < fullText.count {
-                let index = fullText.index(fullText.startIndex, offsetBy: currentIndex)
-                displayedText.append(fullText[index])
-                currentIndex += 1
-            } else {
-                timer.invalidate()
-            }
-        }
-    }
-
-    private func setupAudioSession() {
+    
+    private func setupAndPlay() {
         do {
             let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.playback, mode: .default, options: [])
             try audioSession.setActive(true)
-        } catch {
-            print("Failed to set up audio session: \(error.localizedDescription)")
-        }
-    }
-
-    private func playOpeningMusic() {
-        guard let url = Bundle.main.url(forResource: "Ketikan", withExtension: "mp3") else {
-            print("Audio file not found!")
-            return
-        }
-
-        do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.play()
-
-            // Tambahkan jeda 2 detik setelah audio selesai
-            let audioDuration = player?.duration ?? 5
+            
+            audioManager.playAudio(filename: "Ketikan")
+            let audioDuration = audioManager.audioPlayer?.duration ?? 5
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {
                 showNarrationView = true
             }
         } catch {
-            print("Error loading audio: \(error.localizedDescription)")
+            print("Failed to set up audio session: \(error.localizedDescription)")
         }
     }
+    
+    private func startAnimation() {
+        TextAnimation.animateText(
+            text: fullText,
+            displayedText: $displayedText,
+            speed: 0.09
+        ) {}
+    }
 }
+
+
+
+// MARK: - Preview Providers
+struct OpeningView_Previews: PreviewProvider {
+    static var previews: some View {
+        OpeningView(showOpeningView: .constant(true))
+    }
+}
+

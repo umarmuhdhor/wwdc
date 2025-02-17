@@ -5,12 +5,12 @@ import Combine
 
 
 // Updated ARViewControllerRepresentable to include state
-struct ARViewControllerRepresentable: UIViewControllerRepresentable {
+struct ARThreadViewControllerRepresentable: UIViewControllerRepresentable {
     @ObservedObject var state: TreasureHuntState
     
     func makeUIViewController(context: Context) -> UIViewController {
         let viewController = UIViewController()
-        let arView = ARViewContainer(state: state)
+        let arView = ARThreadViewContainer(state: state)
         let hostingController = UIHostingController(rootView: arView)
         
         viewController.addChild(hostingController)

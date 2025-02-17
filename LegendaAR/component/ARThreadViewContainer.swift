@@ -23,7 +23,7 @@ class TreasureHuntState: ObservableObject {
         }
     }
 }
-struct ARViewContainer: UIViewRepresentable {
+struct ARThreadViewContainer: UIViewRepresentable {
     @ObservedObject var state: TreasureHuntState
     
     func makeUIView(context: Context) -> ARView {
@@ -52,10 +52,10 @@ struct ARViewContainer: UIViewRepresentable {
     }
     
     class Coordinator: NSObject, ARSessionDelegate {
-        var parent: ARViewContainer
+        var parent: ARThreadViewContainer
         var currentThread: ModelEntity?
         
-        init(parent: ARViewContainer) {
+        init(parent: ARThreadViewContainer) {
             self.parent = parent
             super.init()
         }

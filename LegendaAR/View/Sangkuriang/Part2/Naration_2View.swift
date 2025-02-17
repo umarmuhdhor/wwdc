@@ -1,5 +1,4 @@
 import SwiftUI
-import AVFoundation
 
 struct Narration2View: View {
     @StateObject private var audioManager = AudioPlayerManager()
@@ -9,14 +8,15 @@ struct Narration2View: View {
     @State private var isTumangHumanVisible = false
     @State private var isTumangDogVisible = false
     @State private var displayedText = ""
-    @State private var fullTextSangPrabu1 = "Sang Prabu: \"Dayang Sumbi! Who is the man who has made you pregnant?\""
-    @State private var fullTextTumang = "Tumang: \"Forgive me, Your Majesty, but I am the one who has committed this forbidden act.\""
-    @State private var fullTextSangPrabu2 = "Sang Prabu: \"You dare dishonor the kingdom? I curse you to become a dog!\""
     @State private var isTextVisible = false
     @State private var isNextButtonVisible = false
     @State private var navigateToNextScene = false
     
     @Binding var showNarrationView: Bool
+    
+    let fullTextSangPrabu1 = "Sang Prabu: \"Dayang Sumbi! Who is the man who has made you pregnant?\""
+    let fullTextTumang = "Tumang: \"Forgive me, Your Majesty, but I am the one who has committed this forbidden act.\""
+    let fullTextSangPrabu2 = "Sang Prabu: \"You dare dishonor the kingdom? I curse you to become a dog!\""
     
     var body: some View {
         NavigationView {
@@ -48,7 +48,7 @@ struct Narration2View: View {
                         .scaledToFit()
                         .frame(width: 300)
                         .offset(x: 250, y: 100)
-                        .transition(.move(edge: .trailing)) 
+                        .transition(.move(edge: .trailing))
                 }
                 
                 if isTumangDogVisible {
@@ -76,7 +76,7 @@ struct Narration2View: View {
                         .padding(.top, 20)
                         .padding(.trailing, 20)
                         .onTapGesture {
-                            audioManager.stopAudio() // Hentikan audio saat keluar
+                            audioManager.stopAudio()
                             showNarrationView = false
                         }
                     Spacer()
@@ -88,7 +88,7 @@ struct Narration2View: View {
                         HStack {
                             Spacer()
                             NextButton(title: "Next") {
-                                audioManager.stopAudio() // Hentikan audio sebelum navigasi
+                                audioManager.stopAudio()
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     navigateToNextScene = true
                                 }
@@ -103,19 +103,36 @@ struct Narration2View: View {
                 startScene()
             }
             .onDisappear {
-                audioManager.stopAudio() // Hentikan semua audio saat halaman berubah
+                audioManager.stopAudio()
             }
-            
         }
     }
     
     private func startScene() {
-        playDialogue(text: fullTextSangPrabu1, audio: "SangPrabu_1") {
+        DialogueManager.playDialogue(
+            text: fullTextSangPrabu1,
+            audio: "SangPrabu_1",
+            audioManager: audioManager,
+            displayedText: $displayedText,
+            isTextVisible: $isTextVisible
+        ) {
             withAnimation(.easeInOut(duration: 1.0)) {
                 isTumangHumanVisible = true
             }
-            playDialogue(text: fullTextTumang, audio: "Tumang_2") {
-                playDialogue(text: fullTextSangPrabu2, audio: "SangPrabu_2") {
+            DialogueManager.playDialogue(
+                text: fullTextTumang,
+                audio: "Tumang_2",
+                audioManager: audioManager,
+                displayedText: $displayedText,
+                isTextVisible: $isTextVisible
+            ) {
+                DialogueManager.playDialogue(
+                    text: fullTextSangPrabu2,
+                    audio: "SangPrabu_2",
+                    audioManager: audioManager,
+                    displayedText: $displayedText,
+                    isTextVisible: $isTextVisible
+                ) {
                     withAnimation(.easeInOut(duration: 1.0)) {
                         isTumangHumanVisible = false
                         isTumangDogVisible = true
@@ -123,27 +140,6 @@ struct Narration2View: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         isNextButtonVisible = true
                     }
-                }
-            }
-        }
-    }
-    
-    private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
-        audioManager.playAudio(filename: audio)
-        isTextVisible = true
-        displayedText = ""
-        
-        var index = 0
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
-            if index < text.count {
-                let character = text[text.index(text.startIndex, offsetBy: index)]
-                displayedText.append(character)
-                index += 1
-            } else {
-                timer.invalidate()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    isTextVisible = false
-                    completion()
                 }
             }
         }

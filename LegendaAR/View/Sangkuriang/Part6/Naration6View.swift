@@ -1,7 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-struct Narration5View: View {
+struct Narration6View: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @State private var displayedText = ""
     @State private var isTextVisible = false
@@ -10,15 +10,16 @@ struct Narration5View: View {
     @State private var isSangkuriangVisible = false
     @Binding var showNarrationView: Bool
     
-    let sangkuriangText1 = "Here is the deer’s heart, Mom!"
-    let dayangSumbiText1 = "Wow, thank you, my son! But where is Tumang?"
-    let sangkuriangText2 = "Hmm... Sorry, Mom, actually, this is Tumang’s heart."
-    let dayangSumbiText2 = "What?! You must be joking!"
+    let narrationText = "Years later, Sangkuriang grew into a handsome and courageous man. Unknowingly, he met a beautiful woman who turned out to be his mother, Dayang Sumbi."
+    let sangkuriangText1 = "You look very beautiful, Dayang Sumbi. Will you marry me?"
+    let dayangSumbiText1 = "I cannot marry you, Sangkuriang!"
+    let sangkuriangText2 = "But I truly want to marry you, Dayang Sumbi. I will do anything!"
+    let dayangSumbiText2 = "Well. If you really want to marry me, then dam the Citarum River and build me a giant boat before sunrise tomorrow."
     
     var body: some View {
         NavigationView {
             ZStack {
-                Image("background_narasi5")
+                Image("background_narasi1")
                     .resizable()
                     .scaledToFill()
                     .edgesIgnoringSafeArea(.all)
@@ -79,13 +80,22 @@ struct Narration5View: View {
                 }
             }
             .onAppear {
-                isSangkuriangVisible = true
-                playDialogue(text: sangkuriangText1, audio: "Sangkuriang5_1") {
-                    isDayangSumbiVisible = true
-                    playDialogue(text: dayangSumbiText1, audio: "DayangSumbi5_1") {
-                        playDialogue(text: sangkuriangText2, audio: "Sangkuriang5_2") {
-                            playDialogue(text: dayangSumbiText2, audio: "DayangSumbi5_2") {
-                                isNextButtonVisible = true
+                audioManager.playAudio(filename: "Narasi6")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                    showNarrationText(narrationText) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                            isSangkuriangVisible = true
+                            
+                            playDialogue(text: sangkuriangText1, audio: "Sangkuriang6_1") {
+                                isDayangSumbiVisible = true
+                                
+                                playDialogue(text: dayangSumbiText1, audio: "DayangSumbi6_1") {
+                                    playDialogue(text: sangkuriangText2, audio: "Sangkuriang6_2") {
+                                        playDialogue(text: dayangSumbiText2, audio: "DayangSumbi6_2") {
+                                            isNextButtonVisible = true
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -98,19 +108,38 @@ struct Narration5View: View {
         }
     }
     
+    private func showNarrationText(_ text: String, completion: @escaping () -> Void) {
+        isTextVisible = true
+        displayedText = ""
+        var index = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+            if index < text.count {
+                let character = text[text.index(text.startIndex, offsetBy: index)]
+                displayedText.append(character)
+                index += 1
+            } else {
+                timer.invalidate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    isTextVisible = false
+                    completion()
+                }
+            }
+        }
+    }
+    
     private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
         isTextVisible = true
-        displayedText = text
+        displayedText = text // Instantly display all text
         audioManager.playAudio(filename: audio)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             isTextVisible = false
             completion()
         }
     }
 }
 
-struct Narration5View_Previews: PreviewProvider {
+struct Narration6View_Previews: PreviewProvider {
     static var previews: some View {
-        Narration5View(showNarrationView: .constant(true))
+        Narration6View(showNarrationView: .constant(true))
     }
 }

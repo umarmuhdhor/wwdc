@@ -1,111 +1,98 @@
 import SwiftUI
+import RealityKit
 
 struct ARGameView: View {
-    @ObservedObject var state: TreasureHuntState
-    @Environment(\.presentationMode) var presentationMode
+    @State private var isARViewPresented = true
+    @State private var showChoiceDialog = false
+    @State private var gameResult: GameResult?
+    
+    @StateObject private var audioManager = AudioPlayerManager()
+    @Binding var showGameView: Bool
     
     var body: some View {
         ZStack {
-            ARViewControllerRepresentable(state: state)
-                .edgesIgnoringSafeArea(.all)
+            // Main AR Content
+            ARGameViewContainer(
+                showChoiceDialog: $showChoiceDialog,
+                gameResult: $gameResult,
+                audioManager: audioManager
+            )
+            .edgesIgnoringSafeArea(.all)
             
+            // Top close button
             VStack {
-                // Top Bar (Back Button + Counter + Zoom Button)
                 HStack {
-                    // Back button
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.black.opacity(0.7))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .padding(.leading, 20)
-                    
                     Spacer()
-                    
-                    // Zoom button
-                    Button(action: {
-                        state.scale += 0.1 // Tambahkan skala
-                    }) {
-                        Image(systemName: "plus.magnifyingglass")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.black.opacity(0.7))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .padding(.trailing, 10)
-                    
-                    // Counter display
-                    Text("Benang: \(state.foundCount)/\(state.totalCount)")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(Color.black.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(20)
-                        .shadow(radius: 5)
+                    CloseButton(isPresented: $showGameView)
+                        .padding(.top, 20)
                         .padding(.trailing, 20)
+                        .onTapGesture {
+                            audioManager.stopAudio()
+                            showGameView = false
+                        }
                 }
-                .padding(.top, 44)
-                
                 Spacer()
-                
-                // Instructions or Completion Message
-                if state.foundCount < state.totalCount {
-                    Text("Ketuk untuk mencari benang!")
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-                        .padding(.bottom, 40)
-                        .transition(.opacity) // Fade animation
-                        .animation(.easeInOut, value: state.foundCount)
-                } else {
-                    VStack {
-                        Text("🎉 Semua benang telah ditemukan! 🎉")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .background(Color.green.opacity(0.9))
-                            .foregroundColor(.white)
-                            .cornerRadius(20)
-                            .shadow(radius: 5)
-                            .padding(.bottom, 10)
+            }
+            
+            // Choice Dialog
+            if showChoiceDialog {
+                VStack {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        Text("What will you do?")
+                            .font(.headline)
+                            .padding(.top)
                         
                         Button(action: {
-                            presentationMode.wrappedValue.dismiss()
+                            // Hand over Tumang's heart
+                            showChoiceDialog = false
+                            audioManager.playAudio(filename: "HeartDecision")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                showGameView = false
+                                // Here you would trigger the transition to the next scene
+                            }
                         }) {
-                            Text("Kembali ke Menu")
-                                .font(.headline)
-                                .fontWeight(.semibold)
+                            Text("Hand over Tumang's heart")
+                                .foregroundColor(.white)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.blue.opacity(0.9))
-                                .foregroundColor(.white)
+                                .background(Color.red)
                                 .cornerRadius(10)
-                                .shadow(radius: 5)
                         }
-                        .padding(.horizontal, 40)
+                        
+                        Button(action: {
+                            showChoiceDialog = false
+                            // Reset the AR scene
+                            isARViewPresented.toggle()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                isARViewPresented.toggle()
+                            }
+                        }) {
+                            Text("Search for another animal")
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.green)
+                                .cornerRadius(10)
+                        }
                     }
-                    .padding(.bottom, 40)
-                    .transition(.opacity) // Fade animation
-                    .animation(.easeInOut, value: state.foundCount)
+                    .padding()
+                    .background(Color.white.opacity(0.9))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 50)
                 }
             }
         }
-        .navigationBarHidden(true)
-        .background(Color.black.opacity(0.001)) // Untuk memastikan tap gesture tidak terhalang
+        .onDisappear {
+            audioManager.stopAudio()
+        }
+        .forceLandscape()
+    }
+}
+
+struct ARGameView_Previews: PreviewProvider {
+    static var previews: some View {
+        ARGameView(showGameView: .constant(true))
     }
 }
