@@ -20,7 +20,6 @@ struct Narration1_2View: View {
     @State private var showQuiz = false
     @State private var timeRemaining = 10
     @State private var timer: Timer?
-    @State private var quizAnswered = false
     @State private var showIncorrectAnswer = false
     
     // Constants for dialogue
@@ -83,42 +82,77 @@ struct Narration1_2View: View {
                             .edgesIgnoringSafeArea(.all)
                         
                         VStack(spacing: 20) {
-                            Text("Waktu tersisa: \(timeRemaining) detik")
-                                .font(.title2)
-                                .foregroundColor(.white)
+                            // Timer circle in top left
+                            HStack {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.blue.opacity(0.3))
+                                        .frame(width: 60, height: 60)
+                                    
+                                    Circle()
+                                        .stroke(Color.blue, lineWidth: 3)
+                                        .frame(width: 60, height: 60)
+                                    
+                                    Text("\(timeRemaining)")
+                                        .font(.system(size: 32, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.leading, 30)
+                                .padding(.top, 20)
+                                
+                                Spacer()
+                            }
                             
-                            Text("Apa yang harus dilakukan Dayang Sumbi setelah mengetahui yang mengambil benangnya adalah seorang pesuruhnya?")
-                                .font(.title3)
+                            Spacer()
+                                .frame(height: 40)
+                            
+                            Text("What should Dayang Sumbi do after finding out that her servant retrieved her thread?")
+                                .font(.system(size: 24, weight: .bold))
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(.white)
-                                .padding(.horizontal)
+                                .padding(.horizontal, 40)
                             
-                            VStack(spacing: 15) {
+                            Spacer()
+                                .frame(height: 40)
+                            
+                            HStack(spacing: 20) {
                                 Button(action: {
+                                    audioManager.playAudio(filename: "right")
                                     handleAnswer(correct: true)
                                 }) {
-                                    Text("A. Memenuhi janjinya")
-                                        .font(.title3)
+                                    Text("A. Fulfill her promise")
+                                        .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(.white)
-                                        .padding()
                                         .frame(maxWidth: .infinity)
-                                        .background(Color.blue.opacity(0.6))
-                                        .cornerRadius(10)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
                                 }
                                 
                                 Button(action: {
+                                    audioManager.playAudio(filename: "wrong")
                                     handleAnswer(correct: false)
                                 }) {
-                                    Text("B. Mengingkari janjinya dan menolaknya mentah-mentah")
-                                        .font(.title3)
+                                    Text("B. Break her promise and reject him")
+                                        .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(.white)
-                                        .padding()
                                         .frame(maxWidth: .infinity)
-                                        .background(Color.blue.opacity(0.6))
-                                        .cornerRadius(10)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, 40)
+                            
+                            Spacer()
                         }
                     }
                     
@@ -128,12 +162,18 @@ struct Narration1_2View: View {
                             .opacity(0.7)
                             .edgesIgnoringSafeArea(.all)
                         
-                        Text("Jawaban Salah! Dayang Sumbi harus memenuhi janjinya.")
-                            .font(.title2)
+                        Text("Wrong Answer! Dayang Sumbi must fulfill her promise.")
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
-                            .padding()
-                            .background(Color.red.opacity(0.6))
-                            .cornerRadius(10)
+                            .multilineTextAlignment(.center)
+                            .padding(30)
+                            .background(Color.red.opacity(0.8))
+                            .cornerRadius(15)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .stroke(Color.white, lineWidth: 2)
+                            )
+                            .padding(.horizontal, 40)
                     }
                     
                     // Dialogue Text Views
@@ -211,10 +251,17 @@ struct Narration1_2View: View {
     
     private func startQuiz() {
         showQuiz = true
+        timeRemaining = 10
+        audioManager.playAudio(filename: "sec")
+        
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if timeRemaining > 0 {
                 timeRemaining -= 1
+                if timeRemaining > 0 { // Don't play sound on last second
+                    audioManager.playAudio(filename: "sec")
+                }
             } else {
+                audioManager.playAudio(filename: "wrong")
                 handleAnswer(correct: false)
             }
         }
@@ -223,6 +270,7 @@ struct Narration1_2View: View {
     private func handleAnswer(correct: Bool) {
         timer?.invalidate()
         timer = nil
+        audioManager.playAudio(filename: "sec")
         
         if correct {
             showQuiz = false

@@ -12,6 +12,12 @@ struct Narration2View: View {
     @State private var isNextButtonVisible = false
     @State private var navigateToNextScene = false
     
+    // Quiz states
+    @State private var showQuiz = false
+    @State private var timeRemaining = 10
+    @State private var timer: Timer?
+    @State private var showIncorrectAnswer = false
+    
     @Binding var showNarrationView: Bool
     
     let fullTextSangPrabu1 = "Dayang Sumbi! Who is the man who has made you pregnant?"
@@ -58,6 +64,66 @@ struct Narration2View: View {
                         .frame(width: 150)
                         .offset(x: 230, y: 160)
                         .transition(.opacity)
+                }
+                
+                // Quiz overlay
+                if showQuiz {
+                    Color.black
+                        .opacity(0.7)
+                        .edgesIgnoringSafeArea(.all)
+                    
+                    VStack(spacing: 20) {
+                        Text("Waktu tersisa: \(timeRemaining) detik")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                        
+                        Text("Apakah Tumang akan mengakui kesalahannya?")
+                            .font(.title3)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                        
+                        VStack(spacing: 15) {
+                            Button(action: {
+                                handleAnswer(correct: false)
+                            }) {
+                                Text("A. Acuh dengan keadaan, dan tidak bertanggung jawab")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.blue.opacity(0.6))
+                                    .cornerRadius(10)
+                            }
+                            
+                            Button(action: {
+                                handleAnswer(correct: true)
+                            }) {
+                                Text("B. Bertanggung jawab dengan apa yang sudah dia perbuat")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.blue.opacity(0.6))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+                
+                // Incorrect answer overlay
+                if showIncorrectAnswer {
+                    Color.black
+                        .opacity(0.7)
+                        .edgesIgnoringSafeArea(.all)
+                    
+                    Text("Jawaban Salah! Tumang adalah sosok yang bertanggung jawab.")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.red.opacity(0.6))
+                        .cornerRadius(10)
                 }
                 
                 if isTextVisible {
@@ -118,37 +184,71 @@ struct Narration2View: View {
             displayedText: $displayedText,
             isTextVisible: $isTextVisible
         ) {
-            withAnimation(.easeInOut(duration: 1.0)) {
-                isTumangHumanVisible = true
+            startQuiz()
+        }
+    }
+    
+    private func startQuiz() {
+        showQuiz = true
+        timeRemaining = 10
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                handleAnswer(correct: false)
             }
+        }
+    }
+    
+    private func handleAnswer(correct: Bool) {
+        timer?.invalidate()
+        timer = nil
+        
+        if correct {
+            showQuiz = false
+            continueTumangDialogue()
+        } else {
+            showQuiz = false
+            showIncorrectAnswer = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                showIncorrectAnswer = false
+                continueTumangDialogue()
+            }
+        }
+    }
+    
+    private func continueTumangDialogue() {
+        withAnimation(.easeInOut(duration: 1.0)) {
+            isTumangHumanVisible = true
+        }
+        
+        DialogueManager.playDialogue(
+            text: fullTextTumang,
+            audio: "Tumang_2",
+            audioManager: audioManager,
+            displayedText: $displayedText,
+            isTextVisible: $isTextVisible
+        ) {
             DialogueManager.playDialogue(
-                text: fullTextTumang,
-                audio: "Tumang_2",
+                text: fullTextSangPrabu2,
+                audio: "SangPrabu_2",
                 audioManager: audioManager,
                 displayedText: $displayedText,
                 isTextVisible: $isTextVisible
             ) {
-                DialogueManager.playDialogue(
-                    text: fullTextSangPrabu2,
-                    audio: "SangPrabu_2",
-                    audioManager: audioManager,
-                    displayedText: $displayedText,
-                    isTextVisible: $isTextVisible
-                ) {
-                    withAnimation(.easeInOut(duration: 1.0)) {
-                        isTumangHumanVisible = false
-                        isTumangDogVisible = true
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        isNextButtonVisible = true
-                    }
+                withAnimation(.easeInOut(duration: 1.0)) {
+                    isTumangHumanVisible = false
+                    isTumangDogVisible = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    isNextButtonVisible = true
                 }
             }
         }
     }
 }
 
-// Preview
 struct Narration2View_Previews: PreviewProvider {
     static var previews: some View {
         Narration2View(showNarrationView: .constant(true))
