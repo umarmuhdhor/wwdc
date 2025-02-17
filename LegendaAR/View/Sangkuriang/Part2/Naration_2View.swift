@@ -31,7 +31,7 @@ struct Narration2View: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 350)
-                        .offset(x: -200, y: 70) // Menjauhkan Sang Prabu ke kiri
+                        .offset(x: -200, y: 70)
                 }
                 
                 if isDayangSumbiVisible {
@@ -39,7 +39,7 @@ struct Narration2View: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 500)
-                        .offset(x: 160, y: 100) // Menjauhkan Dayang Sumbi ke kanan
+                        .offset(x: 160, y: 100)
                 }
                 
                 if isTumangHumanVisible {
@@ -48,7 +48,7 @@ struct Narration2View: View {
                         .scaledToFit()
                         .frame(width: 300)
                         .offset(x: 250, y: 100)
-                        .transition(.move(edge: .trailing)) // Tumang masuk dari kanan
+                        .transition(.move(edge: .trailing)) 
                 }
                 
                 if isTumangDogVisible {

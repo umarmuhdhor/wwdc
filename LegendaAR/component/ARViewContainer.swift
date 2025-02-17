@@ -5,14 +5,14 @@ import Combine
 
 class TreasureHuntState: ObservableObject {
     @Published var foundCount: Int = 0
-    @Published var scale: Float = 0.12 // Skala default
+    @Published var scale: Float = 0.07 // Skala default
     let totalCount: Int = 3
     static var cachedModel: ModelEntity?
     
     static func loadModel() -> ModelEntity? {
         do {
             let model = try ModelEntity.loadModel(named: "Benang_3D")
-            let scale: Float = 0.12
+            let scale: Float = 0.07
             model.scale = SIMD3<Float>(scale, scale, scale)
             model.generateCollisionShapes(recursive: true)
             model.name = "mesh1"

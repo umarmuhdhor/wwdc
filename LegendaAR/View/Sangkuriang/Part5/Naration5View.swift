@@ -1,7 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-struct Narration3View: View {
+struct Narration5View: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @State private var displayedText = ""
     @State private var isTextVisible = false
@@ -10,9 +10,14 @@ struct Narration3View: View {
     @State private var isSangkuriangVisible = false
     @Binding var showNarrationView: Bool
     
-    let narrationText = "Sangkuriang grew into a brave and strong young man. He often went hunting in the forest, accompanied by Tumang, unaware that Tumang was his father."
-    let dayangSumbiText = "Sangkuriang, go hunt and bring me a deer’s heart for dinner!"
-    let sangkuriangText = "Okay, Mom!"
+    let dialogue: [(text: String, audio: String, showDayangSumbi: Bool, showSangkuriang: Bool)] = [
+        ("Here is the deer’s heart, Mom!", "Sangkuriang5_1", false, true),
+        ("Wow, thank you, my son! But where is Tumang?", "DayangSumbi5_1", true, false),
+        ("Hmm... Sorry, Mom, actually, this is Tumang’s heart.", "Sangkuriang5_2", false, true),
+        ("What?! You must be joking!", "DayangSumbi5_2", true, false)
+    ]
+    
+    @State private var currentDialogueIndex = 0
     
     var body: some View {
         NavigationView {
@@ -42,6 +47,15 @@ struct Narration3View: View {
                         .transition(.opacity)
                 }
                 
+                if isSangkuriangVisible {
+                    Image("Sangkuriang")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 350)
+                        .offset(x: -150, y: 120)
+                        .transition(.opacity)
+                }
+                
                 if isTextVisible {
                     Text(displayedText)
                         .font(.body)
@@ -51,15 +65,6 @@ struct Narration3View: View {
                         .background(Color.white.opacity(0.6))
                         .cornerRadius(10)
                         .offset(y: 130)
-                }
-                
-                if isSangkuriangVisible {
-                    Image("Sangkuriang")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 350)
-                        .offset(x: -150, y: 120)
-                        .transition(.opacity)
                 }
                 
                 if isNextButtonVisible {
@@ -78,22 +83,7 @@ struct Narration3View: View {
                 }
             }
             .onAppear {
-                audioManager.playAudio(filename: "Narasi3")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                    showNarrationText(narrationText) {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 9) {
-                        isDayangSumbiVisible = true
-                        
-                            playDialogue(text: dayangSumbiText, audio: "DayangSumbi3_1") {
-                                isSangkuriangVisible = true
-                                
-                                playDialogue(text: sangkuriangText, audio: "Sangkuriang3_1") {
-                                    isNextButtonVisible = true
-                                }
-                            }
-                        }
-                    }
-                }
+                playNextDialogue()
             }
             .onDisappear {
                 audioManager.stopAudio()
@@ -102,38 +92,28 @@ struct Narration3View: View {
         }
     }
     
-    private func showNarrationText(_ text: String, completion: @escaping () -> Void) {
-        isTextVisible = true
-        displayedText = ""
-        var index = 0
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
-            if index < text.count {
-                let character = text[text.index(text.startIndex, offsetBy: index)]
-                displayedText.append(character)
-                index += 1
-            } else {
-                timer.invalidate()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    isTextVisible = false
-                    completion()
-                }
+    private func playNextDialogue() {
+        if currentDialogueIndex < dialogue.count {
+            let current = dialogue[currentDialogueIndex]
+            isDayangSumbiVisible = current.showDayangSumbi
+            isSangkuriangVisible = current.showSangkuriang
+            isTextVisible = true
+            displayedText = current.text
+            audioManager.playAudio(filename: current.audio)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                isTextVisible = false
+                currentDialogueIndex += 1
+                playNextDialogue()
             }
-        }
-    }
-    
-    private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
-        isTextVisible = true
-        displayedText = text // Langsung tampil semua teks
-        audioManager.playAudio(filename: audio)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            isTextVisible = false
-            completion()
+        } else {
+            isNextButtonVisible = true
         }
     }
 }
 
-struct Narration3View_Previews: PreviewProvider {
+struct Narration5View_Previews: PreviewProvider {
     static var previews: some View {
-        Narration3View(showNarrationView: .constant(true))
+        Narration5View(showNarrationView: .constant(true))
     }
 }
