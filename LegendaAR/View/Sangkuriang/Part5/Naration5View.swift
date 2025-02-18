@@ -10,6 +10,8 @@ struct Narration5View: View {
     @State private var isSangkuriangVisible = false
     @Binding var showNarrationView: Bool
     
+    @State private var textAnimationTimer: Timer?
+    
     let sangkuriangText1 = "Here is the deer’s heart, Mom!"
     let dayangSumbiText1 = "Wow, thank you, my son! But where is Tumang?"
     let sangkuriangText2 = "Hmm... Sorry, Mom, actually, this is Tumang’s heart."

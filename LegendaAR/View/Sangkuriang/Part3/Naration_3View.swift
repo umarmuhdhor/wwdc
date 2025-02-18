@@ -17,6 +17,7 @@ struct Narration3View: View {
     let sangkuriangText = "Okay, Mom!"
     
     var body: some View {
+        
         NavigationView {
             ZStack {
                 Image("background_narasi1")

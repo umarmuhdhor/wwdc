@@ -9,29 +9,45 @@ struct OpeningView2: View {
     let fullText = "Dayang Sumbi keeps her promise and marries Tumang. Time passes, and she becomes pregnant. Her father, Sang Prabu, summons her to the palace."
     
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            
-            VStack {
-                CloseButton(isPresented: $showOpeningView)
-                    .onTapGesture {
-                        audioManager.stopAudio()
-                        showOpeningView = false
-                    }
-                Spacer()
+        GeometryReader { geo in
+            ZStack {
+                Color.black.ignoresSafeArea()
                 
-                Text(displayedText)
-                    .foregroundColor(.white)
-                    .font(.title)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .onAppear {
-                        startAnimation()
-                    }
+                VStack {
+                    CloseButton(isPresented: $showOpeningView)
+                        .onTapGesture {
+                            audioManager.stopAudio()
+                            showOpeningView = false
+                        }
+                    Spacer()
+                    
+                    Text(displayedText)
+                        .foregroundColor(.white)
+                        .font(.title)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .onAppear {
+                            startAnimation()
+                        }
+                    
+                    Spacer()
+                }
                 
-                Spacer()
-            }
-        }
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        NextButton(title: "Skip") {
+                            audioManager.stopAudio()
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showNarrationView = true
+                            }
+                        }
+                        .padding(.trailing, geo.size.width * 0.08)
+                        .padding(.bottom, geo.size.height * 0.1)
+                    }
+                }
+            }}
         .onAppear {
             setupAndPlay()
         }

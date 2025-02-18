@@ -24,7 +24,7 @@ struct Narration1_2View: View {
     @State private var showCorrectAnswer = false
     
     // Constants for dialogue
-    private let tumangDialogue = "Dayang Sumbi, here is your thread"
+    private let tumangDialogue = "Princess, here is your thread"
     private let dayangDialogue = "Thank you, Tumang. As I promised, I will marry you."
     
     @Binding var showNarrationView: Bool

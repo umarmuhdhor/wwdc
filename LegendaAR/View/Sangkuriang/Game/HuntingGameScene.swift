@@ -2,16 +2,30 @@ import SpriteKit
 import GameplayKit
 
 class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
+    // MARK: - Properties
     private var sangkuriang: SKSpriteNode!
+    private var bow: SKSpriteNode!
     private var tumang: SKSpriteNode!
     private var arrow: SKSpriteNode!
+    private var bowString: SKShapeNode?
+    private var trajectoryPoints: [SKShapeNode] = []
+    
+    // Game State Properties
     private var isAiming = false
-    private var aimingLine: SKShapeNode?
     private var startPosition: CGPoint?
+    private var bowStringRestPosition: CGPoint?
+    private var springRestPosition: CGPoint!
+    private var initialTouchPosition: CGPoint!
+    private var shootingPower: CGFloat = 0
     private var gameState: GameState = .aiming
     private var dialogBox: SKNode?
-    private var shootingPower: CGFloat = 0
     
+    // Configuration Constants
+    private let maxShootingDistance: CGFloat = 800.0
+    private let springConstant: CGFloat = 0.8
+    private let maxPullbackDistance: CGFloat = 100.0
+    
+    // MARK: - Game States
     enum GameState {
         case aiming
         case shooting
@@ -20,10 +34,12 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         case missed
     }
     
+    // MARK: - Scene Setup
     override func didMove(to view: SKView) {
         setupPhysicsWorld()
         setupBackground()
         setupCharacters()
+        setupBow()
         setupInstructions()
         setupBoundaries()
     }
@@ -33,136 +49,268 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.gravity = CGVector(dx: 0, dy: -9.8)
     }
     
-    private func setupBoundaries() {
-        let boundary = SKPhysicsBody(edgeLoopFrom: self.frame)
-        self.physicsBody = boundary
-        self.physicsBody?.friction = 0
-        self.physicsBody?.restitution = 0.5
-        self.physicsBody?.categoryBitMask = PhysicsCategory.boundary
-    }
-    
     private func setupBackground() {
         let background = SKSpriteNode(imageNamed: "forest_background")
         background.position = CGPoint(x: frame.midX, y: frame.midY)
         background.size = self.size
         background.zPosition = -1
         addChild(background)
+        
+        // Ground setup
+        let ground = SKSpriteNode(imageNamed: "ground")
+        ground.position = CGPoint(x: frame.midX, y: 50)
+        ground.size = CGSize(width: frame.width, height: 100)
+        ground.zPosition = 0
+        
+        let groundPhysics = SKPhysicsBody(rectangleOf: ground.size)
+        ground.physicsBody = groundPhysics
+        ground.physicsBody?.isDynamic = false
+        ground.physicsBody?.categoryBitMask = PhysicsCategory.boundary
+        ground.physicsBody?.collisionBitMask = PhysicsCategory.arrow | PhysicsCategory.tumang
+        
+        addChild(ground)
     }
     
     private func setupCharacters() {
-        // Setup Sangkuriang
-        sangkuriang = SKSpriteNode(imageNamed: "Sangkuriang")
-        sangkuriang.position = CGPoint(x: frame.midX - 200, y: frame.midY)
+        // Sangkuriang setup
+        sangkuriang = SKSpriteNode(imageNamed: "sangkuriang")
+        sangkuriang.position = CGPoint(x: frame.midX - 200, y: 120)
         sangkuriang.setScale(0.5)
         sangkuriang.zPosition = 1
         addChild(sangkuriang)
         
-        // Setup Tumang with a smaller hit area
-        tumang = SKSpriteNode(imageNamed: "Tumang_dog")
-        tumang.position = CGPoint(x: frame.midX + 200, y: frame.midY)
+        // Tumang setup
+        tumang = SKSpriteNode(imageNamed: "tumang")
+        tumang.position = CGPoint(x: frame.midX + 200, y: 120)
         tumang.setScale(0.3)
         tumang.zPosition = 1
-        tumang.name = "tumang"
         
-        // Create a smaller physics body for more precise hit detection
         let smallerSize = CGSize(width: tumang.size.width * 0.6, height: tumang.size.height * 0.6)
         tumang.physicsBody = SKPhysicsBody(rectangleOf: smallerSize)
-        tumang.physicsBody?.isDynamic = false  // Make static until hit
-        tumang.physicsBody?.affectedByGravity = false  // Prevent gravity effect
+        tumang.physicsBody?.isDynamic = false
+        tumang.physicsBody?.affectedByGravity = false
         tumang.physicsBody?.categoryBitMask = PhysicsCategory.tumang
         tumang.physicsBody?.contactTestBitMask = PhysicsCategory.arrow
-        tumang.physicsBody?.collisionBitMask = 0
+        tumang.physicsBody?.collisionBitMask = PhysicsCategory.boundary
         
         addChild(tumang)
     }
     
+    private func setupBow() {
+        bow = SKSpriteNode(imageNamed: "bow")
+        bow.position = CGPoint(x: sangkuriang.position.x + 30, y: sangkuriang.position.y + 20)
+        bow.setScale(0.3)
+        bow.zPosition = 2
+        addChild(bow)
+        
+        bowString = SKShapeNode()
+        bowString?.strokeColor = .white
+        bowString?.lineWidth = 2
+        bowString?.zPosition = 2
+        if let bowString = bowString {
+            addChild(bowString)
+        }
+        
+        bowStringRestPosition = CGPoint(x: bow.position.x, y: bow.position.y)
+        springRestPosition = bow.position
+        
+        let stringPath = CGMutablePath()
+        stringPath.move(to: bowStringRestPosition!)
+        stringPath.addLine(to: bowStringRestPosition!)
+        bowString?.path = stringPath
+    }
+    
     private func setupInstructions() {
-        let instructions = SKLabelNode(text: "Tap and drag to aim, release to shoot")
+        let instructions = SKLabelNode(text: "Tarik ke belakang untuk membidik, lepas untuk menembak")
         instructions.position = CGPoint(x: frame.midX, y: frame.maxY - 50)
         instructions.fontName = "HelveticaNeue-Bold"
         instructions.fontSize = 24
         instructions.fontColor = .white
-        instructions.name = "instructions"
         addChild(instructions)
     }
     
+    private func setupBoundaries() {
+        let boundary = SKPhysicsBody(edgeLoopFrom: self.frame)
+        self.physicsBody = boundary
+        self.physicsBody?.friction = 0
+        self.physicsBody?.restitution = 0
+        self.physicsBody?.categoryBitMask = PhysicsCategory.boundary
+    }
+    
+    // MARK: - Touch Handling
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard gameState == .aiming, let touch = touches.first else { return }
-        startPosition = touch.location(in: self)
+        initialTouchPosition = touch.location(in: self)
         
-        // Create aiming line
-        aimingLine = SKShapeNode()
-        aimingLine?.strokeColor = .white
-        aimingLine?.lineWidth = 2
-        aimingLine?.zPosition = 3
-        addChild(aimingLine!)
-        
-        // Create arrow with physics disabled initially
         arrow = SKSpriteNode(imageNamed: "arrow")
-        arrow.position = sangkuriang.position
+        arrow.position = bow.position
         arrow.setScale(0.3)
         arrow.zPosition = 2
         
         arrow.physicsBody = SKPhysicsBody(rectangleOf: arrow.size)
-        arrow.physicsBody?.isDynamic = false  // Disable physics initially
-        arrow.physicsBody?.affectedByGravity = false  // Disable gravity initially
+        arrow.physicsBody?.isDynamic = false
+        arrow.physicsBody?.affectedByGravity = false
         arrow.physicsBody?.categoryBitMask = PhysicsCategory.arrow
         arrow.physicsBody?.contactTestBitMask = PhysicsCategory.tumang | PhysicsCategory.boundary
-        arrow.physicsBody?.collisionBitMask = PhysicsCategory.boundary
+        arrow.physicsBody?.collisionBitMask = 0
         arrow.physicsBody?.mass = 0.1
+        arrow.physicsBody?.linearDamping = 0.5
         
         addChild(arrow)
         isAiming = true
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard isAiming, let touch = touches.first, let start = startPosition else { return }
+        guard isAiming, let touch = touches.first else { return }
         let currentPosition = touch.location(in: self)
         
-        // Update aiming line
-        let path = CGMutablePath()
-        path.move(to: sangkuriang.position)
-        path.addLine(to: currentPosition)
-        aimingLine?.path = path
+        let dx = currentPosition.x - initialTouchPosition.x
+        let dy = currentPosition.y - initialTouchPosition.y
+        let pullDistance = sqrt(dx * dx + dy * dy)
         
-        // Calculate power based on drag distance
-        let dx = currentPosition.x - start.x
-        let dy = currentPosition.y - start.y
-        shootingPower = sqrt(dx * dx + dy * dy) / 100
-        shootingPower = min(shootingPower, 2.0) // Cap the power
+        let clampedDistance = min(pullDistance, maxPullbackDistance)
+        let angle = atan2(dy, dx)
         
-        // Update arrow position and rotation while aiming
-        let angle = atan2(currentPosition.y - start.y, currentPosition.x - start.x)
-        arrow.position = sangkuriang.position
-        arrow.zRotation = angle
+        let springForceX = -cos(angle) * clampedDistance * springConstant
+        let springForceY = -sin(angle) * clampedDistance * springConstant
+        
+        let arrowX = springRestPosition.x + springForceX
+        let arrowY = springRestPosition.y + springForceY
+        arrow.position = CGPoint(x: arrowX, y: arrowY)
+        arrow.zRotation = angle + .pi
+        
+        let stringPath = CGMutablePath()
+        stringPath.move(to: bowStringRestPosition!)
+        stringPath.addLine(to: CGPoint(x: arrowX, y: arrowY))
+        bowString?.path = stringPath
+        
+        shootingPower = clampedDistance / maxPullbackDistance
+        updateTrajectoryPrediction(from: arrow.position, angle: angle + .pi, power: shootingPower)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard isAiming, let touch = touches.first, let start = startPosition else { return }
+        guard isAiming else { return }
         gameState = .shooting
         
-        let currentPosition = touch.location(in: self)
-        let dx = currentPosition.x - start.x
-        let dy = currentPosition.y - start.y
+        trajectoryPoints.forEach { $0.removeFromParent() }
+        trajectoryPoints.removeAll()
         
-        // Enable physics for arrow
+        let stringPath = CGMutablePath()
+        stringPath.move(to: bowStringRestPosition!)
+        stringPath.addLine(to: bowStringRestPosition!)
+        bowString?.path = stringPath
+        
         arrow.physicsBody?.isDynamic = true
         arrow.physicsBody?.affectedByGravity = true
         
-        // Apply impulse to arrow
-        let impulse = CGVector(dx: dx * shootingPower, dy: dy * shootingPower)
-        arrow.physicsBody?.applyImpulse(impulse)
+        let angle = arrow.zRotation
+        let springVelocity = shootingPower * 800
+        let velocityX = cos(angle) * springVelocity
+        let velocityY = sin(angle) * springVelocity
         
-        // Remove aiming line
-        aimingLine?.removeFromParent()
+        let limitedVelocityX = min(abs(velocityX), maxShootingDistance) * sign(velocityX)
+        let limitedVelocityY = min(abs(velocityY), maxShootingDistance) * sign(velocityY)
+        
+        arrow.physicsBody?.velocity = CGVector(dx: limitedVelocityX, dy: limitedVelocityY)
+        
+        let trackingAction = SKAction.customAction(withDuration: 3.0) { [weak self] node, _ in
+            guard let arrow = node as? SKSpriteNode,
+                  let velocity = arrow.physicsBody?.velocity else { return }
+            
+            let currentSpeed = sqrt(velocity.dx * velocity.dx + velocity.dy * velocity.dy)
+            if currentSpeed > self?.maxShootingDistance ?? 400 {
+                let scale = (self?.maxShootingDistance ?? 400) / currentSpeed
+                arrow.physicsBody?.velocity = CGVector(
+                    dx: velocity.dx * scale,
+                    dy: velocity.dy * scale
+                )
+            }
+            
+            let angle = atan2(velocity.dy, velocity.dx)
+            arrow.zRotation = angle
+        }
+        arrow.run(trackingAction)
+        
         isAiming = false
         
-        // Start miss detection timer
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             self?.checkMiss()
         }
     }
     
+    // MARK: - Trajectory Prediction
+    private func updateTrajectoryPrediction(from startPoint: CGPoint, angle: CGFloat, power: CGFloat) {
+        trajectoryPoints.forEach { $0.removeFromParent() }
+        trajectoryPoints.removeAll()
+        
+        let springVelocity = power * 800
+        let velocity = CGVector(
+            dx: cos(angle) * springVelocity,
+            dy: sin(angle) * springVelocity
+        )
+        
+        let speed = sqrt(velocity.dx * velocity.dx + velocity.dy * velocity.dy)
+        let limitedVelocity: CGVector
+        if speed > maxShootingDistance {
+            let scale = maxShootingDistance / speed
+            limitedVelocity = CGVector(
+                dx: velocity.dx * scale,
+                dy: velocity.dy * scale
+            )
+        } else {
+            limitedVelocity = velocity
+        }
+        
+        let gravity = CGVector(dx: 0, dy: -9.8)
+        let timeStep: CGFloat = 0.1
+        let numPoints = 20
+        
+        var position = startPoint
+        var currentVelocity = limitedVelocity
+        
+        for i in 0..<numPoints {
+            let point = SKShapeNode(circleOfRadius: 2)
+            point.fillColor = .white
+            point.strokeColor = .white
+            point.alpha = 1.0 - (CGFloat(i) / CGFloat(numPoints))
+            point.position = position
+            point.zPosition = 1
+            addChild(point)
+            trajectoryPoints.append(point)
+            
+            position.x += currentVelocity.dx * timeStep
+            position.y += currentVelocity.dy * timeStep
+            currentVelocity.dy += gravity.dy * timeStep
+        }
+    }
+    
+    // MARK: - Collision Handling
+    func didBegin(_ contact: SKPhysicsContact) {
+        guard gameState == .shooting else { return }
+        
+        if (contact.bodyA.categoryBitMask == PhysicsCategory.arrow &&
+            contact.bodyB.categoryBitMask == PhysicsCategory.tumang) ||
+            (contact.bodyA.categoryBitMask == PhysicsCategory.tumang &&
+             contact.bodyB.categoryBitMask == PhysicsCategory.arrow) {
+            
+            arrow.physicsBody?.isDynamic = false
+            arrow.physicsBody?.affectedByGravity = false
+            arrow.removeAllActions()
+            
+            tumang.physicsBody?.isDynamic = true
+            tumang.physicsBody?.affectedByGravity = true
+            
+            gameState = .choosing
+            showChoiceDialog()
+        } else if contact.bodyA.categoryBitMask == PhysicsCategory.arrow ||
+                    contact.bodyB.categoryBitMask == PhysicsCategory.arrow {
+            arrow.physicsBody?.isDynamic = false
+            arrow.physicsBody?.affectedByGravity = false
+            arrow.removeAllActions()
+        }
+    }
+    
+    // MARK: - Game State Management
     private func checkMiss() {
         guard gameState == .shooting else { return }
         gameState = .missed
@@ -170,7 +318,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func showMissMessage() {
-        let missLabel = SKLabelNode(text: "Missed! Try again")
+        let missLabel = SKLabelNode(text: "Meleset! Coba lagi")
         missLabel.fontName = "HelveticaNeue-Bold"
         missLabel.fontSize = 32
         missLabel.fontColor = .red
@@ -184,29 +332,11 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func didBegin(_ contact: SKPhysicsContact) {
-        guard gameState == .shooting else { return }
-        
-        if (contact.bodyA.categoryBitMask == PhysicsCategory.arrow &&
-            contact.bodyB.categoryBitMask == PhysicsCategory.tumang) ||
-            (contact.bodyA.categoryBitMask == PhysicsCategory.tumang &&
-             contact.bodyB.categoryBitMask == PhysicsCategory.arrow) {
-            
-            // Enable physics for Tumang when hit
-            tumang.physicsBody?.isDynamic = true
-            tumang.physicsBody?.affectedByGravity = true
-            
-            gameState = .choosing
-            showChoiceDialog()
-        }
-    }
-    
     private func showChoiceDialog() {
         let dialogBackground = SKSpriteNode(color: .black, size: CGSize(width: 500, height: 300))
         dialogBackground.position = CGPoint(x: frame.midX, y: frame.midY)
         dialogBackground.alpha = 0.8
         dialogBackground.zPosition = 10
-        dialogBackground.name = "dialogBox"
         
         let title = SKLabelNode(text: "What will you do?")
         title.position = CGPoint(x: 0, y: 80)
@@ -276,19 +406,32 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func resetScene() {
-        // Reset all game elements
+        // Remove game elements
         arrow?.removeFromParent()
         dialogBox?.removeFromParent()
-        aimingLine?.removeFromParent()
+        trajectoryPoints.forEach { $0.removeFromParent() }
+        trajectoryPoints.removeAll()
         
-        // Reset Tumang's physics
+        // Reset bow string
+        let stringPath = CGMutablePath()
+        stringPath.move(to: bowStringRestPosition!)
+        stringPath.addLine(to: bowStringRestPosition!)
+        bowString?.path = stringPath
+        
+        // Reset Tumang
         tumang.physicsBody?.isDynamic = false
         tumang.physicsBody?.affectedByGravity = false
+        tumang.position = CGPoint(x: frame.midX + 200, y: 120)
+        tumang.zRotation = 0
         
+        // Reset game state
         gameState = .aiming
+        isAiming = false
+        shootingPower = 0
     }
 }
 
+// MARK: - Physics Categories
 struct PhysicsCategory {
     static let none: UInt32 = 0
     static let arrow: UInt32 = 0b1

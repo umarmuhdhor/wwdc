@@ -15,7 +15,7 @@ struct Narration1View: View {
     @State private var isTextVisible = false
     @State private var isDayangDialogueVisible = false
     @State private var navigateToARView = false
-    @State private var isSkipVisible = true
+    @State private var isSkipVisible = false
     @Binding var showNarrationView: Bool
     @StateObject private var treasureState = TreasureHuntState()
     
@@ -51,36 +51,11 @@ struct Narration1View: View {
                         }
                     }
                     
-                    // Close button
+                    // Close button & Skip button in a single HStack
                     VStack {
-                        CloseButton(isPresented: $showNarrationView)
-                            .padding(.top, geo.size.height * 0.02)
-                            .padding(.trailing, geo.size.width * 0.05)
-                            .onTapGesture {
-                                audioManager.stopAudio()
-                                showNarrationView = false
-                            }
-                        Spacer()
-                    }
-                    
-                    // Thread
-                    Image("thread_spool")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: geo.size.width * 0.2)
-                        .offset(
-                            x: threadPositionx * geo.size.width / 390,
-                            y: threadPositiony * geo.size.height / 844
-                        )
-                        .opacity(threadPositiony == -50 ? 0 : 1)
-                        .animation(.easeInOut(duration: 3.0), value: threadPositiony)
-                    
-                    if isSkipVisible {
-                        VStack {
-                            HStack {
-                                Spacer()
-                                Button(action: {
-                                    // Hentikan audio
+                        HStack {
+                            if isSkipVisible {
+                                NextButton(title: "Skip Narration") {
                                     audioManager.stopAudio()
                                     
                                     // Hentikan animasi teks
@@ -100,26 +75,34 @@ struct Narration1View: View {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                         isDayangSumbiVisible = true
                                     }
-                                }) {
-                                    Text("Skip")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .padding(.vertical, 10)
-                                        .padding(.horizontal, 20)
-                                        .background(Color.black.opacity(0.7))
-                                        .cornerRadius(15)
-                                        .shadow(radius: 10)
                                 }
-                                .padding(.top, geo.size.height * 0.05)
-                                .padding(.trailing, geo.size.width * 0.1)
-                                .zIndex(1)
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .offset(y: geo.size.height * -0.3)
+                            
+                            Spacer()
+                            
+                            CloseButton(isPresented: $showNarrationView)
+                                .onTapGesture {
+                                    audioManager.stopAudio()
+                                    showNarrationView = false
+                                }
                         }
+                        .padding(.top, geo.size.height * 0.02)
+                        .padding(.horizontal, geo.size.width * 0.05) // Mengatur posisi horizontal
+                        Spacer()
                     }
-
-
+                    
+                    
+                    // Thread
+                    Image("thread_spool")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: geo.size.width * 0.2)
+                        .offset(
+                            x: threadPositionx * geo.size.width / 390,
+                            y: threadPositiony * geo.size.height / 844
+                        )
+                        .opacity(threadPositiony == -50 ? 0 : 1)
+                        .animation(.easeInOut(duration: 3.0), value: threadPositiony)
                     
                     
                     // Dayang Sumbi
@@ -194,6 +177,7 @@ struct Narration1View: View {
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                         isTextVisible = true
+                        isSkipVisible = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration - 5) {
                             isTextVisible = false
                             isSkipVisible = false
