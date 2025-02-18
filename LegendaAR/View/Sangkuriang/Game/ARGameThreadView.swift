@@ -109,7 +109,7 @@ struct ARThreadGameView: View {
             NavigationLink(destination: Narration1_2View(showNarrationView: $navigateToNextView), isActive: $navigateToNextView) {
                 EmptyView()
             }
-            .hidden()
+                .hidden()
         )
     }
 }

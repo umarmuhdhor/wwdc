@@ -7,42 +7,60 @@ struct OpeningView: View {
     @State private var showNarrationView = false
     @State private var displayedText = ""
     let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
-
+    
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-
-            VStack {
-                CloseButton(isPresented: $showOpeningView)
-                    .onTapGesture {
-                        audioManager.stopAudio()
-                        showOpeningView = false
+        GeometryReader { geo in
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                VStack {
+                    CloseButton(isPresented: $showOpeningView)
+                        .onTapGesture {
+                            audioManager.stopAudio()
+                            showOpeningView = false
+                        }
+                    Spacer()
+                    
+                    Text(displayedText)
+                        .foregroundColor(.white)
+                        .font(.title)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .onAppear {
+                            startAnimation()
+                        }
+                    
+                    Spacer()
+                    Spacer()
+                }
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        NextButton(title: "Skip") {
+                            audioManager.stopAudio()
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showNarrationView = true
+                            }
+                        }
+                        .padding(.trailing, geo.size.width * 0.08)
+                        .padding(.bottom, geo.size.height * 0.1)
                     }
-                Spacer()
-
-                Text(displayedText)
-                    .foregroundColor(.white)
-                    .font(.title)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                    .onAppear {
-                        startAnimation()
-                    }
-
-                Spacer()
-                Spacer()
+                }
+                
+            }
+            .onAppear {
+                setupAndPlay()
+            }
+            .onDisappear {
+                audioManager.stopAudio()
+            }
+            .forceLandscape()
+            .fullScreenCover(isPresented: $showNarrationView) {
+                Narration1View(showNarrationView: $showNarrationView)
             }
         }
-        .onAppear {
-            setupAndPlay()
-        }
-        .onDisappear {
-            audioManager.stopAudio()
-        }
-        .forceLandscape()
-        .fullScreenCover(isPresented: $showNarrationView) {
-            Narration1View(showNarrationView: $showNarrationView)
-        }
+        
     }
     
     private func setupAndPlay() {

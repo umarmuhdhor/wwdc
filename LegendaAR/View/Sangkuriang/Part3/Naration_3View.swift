@@ -9,6 +9,7 @@ struct Narration3View: View {
     @State private var isDayangSumbiVisible = false
     @State private var isSangkuriangVisible = false
     @State private var navigateToNextScene = false
+    @State private var showHuntingGame = false
     @Binding var showNarrationView: Bool
     
     let narrationText = "Sangkuriang grew into a brave and strong young man. He often went hunting in the forest, accompanied by Tumang, unaware that Tumang was his father."
@@ -70,8 +71,7 @@ struct Narration3View: View {
                             Spacer()
                             NextButton(title: "Next") {
                                 audioManager.stopAudio()
-                                showNarrationView = false
-                                navigateToNextScene = true
+                                showHuntingGame = true
                             }
                             .padding(.trailing, 30)
                             .padding(.bottom, 30)
@@ -84,8 +84,8 @@ struct Narration3View: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     showNarrationText(narrationText) {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 9) {
-                        isDayangSumbiVisible = true
-                        
+                            isDayangSumbiVisible = true
+                            
                             playDialogue(text: dayangSumbiText, audio: "DayangSumbi3_1") {
                                 isSangkuriangVisible = true
                                 
@@ -100,8 +100,8 @@ struct Narration3View: View {
             .onDisappear {
                 audioManager.stopAudio()
             }
-            .fullScreenCover(isPresented: $navigateToNextScene) {
-                Narration5View(showNarrationView: $navigateToNextScene)
+            .fullScreenCover(isPresented: $showHuntingGame) {
+                HuntingGameView(showGameView: $showHuntingGame)
             }
             .forceLandscape()
         }

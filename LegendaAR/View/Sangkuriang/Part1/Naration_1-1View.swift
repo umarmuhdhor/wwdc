@@ -15,12 +15,13 @@ struct Narration1View: View {
     @State private var isTextVisible = false
     @State private var isDayangDialogueVisible = false
     @State private var navigateToARView = false
+    @State private var isSkipVisible = true
     @Binding var showNarrationView: Bool
     @StateObject private var treasureState = TreasureHuntState()
-
+    
     let fullText = "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi. She was known for her unmatched beauty and extraordinary skill in weaving."
     let dayangDialogue = "Oh no! My thread has fallen into the bushes! If someone retrieves it for me, if it's a woman, I will make her my lifelong sister, and if it's a man, I will marry him."
-
+    
     var body: some View {
         NavigationView {
             GeometryReader { geo in
@@ -47,7 +48,7 @@ struct Narration1View: View {
                             coverScaleX = 0.0
                         }
                     }
-
+                    
                     // Close button
                     VStack {
                         CloseButton(isPresented: $showNarrationView)
@@ -59,7 +60,7 @@ struct Narration1View: View {
                             }
                         Spacer()
                     }
-
+                    
                     // Thread
                     Image("thread_spool")
                         .resizable()
@@ -71,7 +72,45 @@ struct Narration1View: View {
                         )
                         .opacity(threadPositiony == -50 ? 0 : 1)
                         .animation(.easeInOut(duration: 3.0), value: threadPositiony)
+                    
+                    if isSkipVisible {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    audioManager.stopAudio()
+                                    isTextVisible = false
+                                    isSkipVisible = false
+                                    
+                                    withAnimation(.linear(duration: 1.0)) {
+                                        isThreadAnimating = true
+                                    }
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                        isDayangSumbiVisible = true
+                                    }
+                                }) {
+                                    Text("Skip")
+                                        .font(.title2) // Adjusted font size
+                                        .foregroundColor(.white)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .background(Color.black.opacity(0.7))
+                                        .cornerRadius(15)
+                                        .shadow(radius: 10) // Added shadow for better visual depth
+                                }
+                                .padding(.top, geo.size.height * 0.05) // Positioning it at the top
+                                .padding(.trailing, geo.size.width * 0.1) // Adding right padding
+                                .zIndex(1) // Ensure it's in front of other elements
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensures button stays centered vertically
+                            .offset(y: geo.size.height * -0.3) // Adjust vertical positioning to be closer to the top
+                        }
+                    }
 
+
+                    
+                    
                     // Dayang Sumbi
                     if isDayangSumbiVisible {
                         Image("DayangSumbi")
@@ -96,7 +135,7 @@ struct Narration1View: View {
                                 }
                             }
                     }
-
+                    
                     // Narration text
                     if isTextVisible {
                         DialogueTextView(text: displayedText)
@@ -113,7 +152,7 @@ struct Narration1View: View {
                             .frame(width: geo.size.width * 0.95)
                             .offset(y: geo.size.height * 0.35)
                     }
-
+                    
                     // Next button
                     if isNextButtonVisible {
                         VStack {
@@ -141,21 +180,22 @@ struct Narration1View: View {
                 .onAppear {
                     audioManager.playAudio(filename: "Narasi1")
                     let narrationDuration = audioManager.audioPlayer?.duration ?? 5
-
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                         isTextVisible = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration - 5) {
                             isTextVisible = false
-
+                            isSkipVisible = false
+                            
                             withAnimation(.easeInOut(duration: 1.0)) {
                                 threadPositiony = geo.size.height * 0.75
                                 threadPositionx = geo.size.width * -0.25
                             }
-
+                            
                             withAnimation(.linear(duration: 3.0)) {
                                 isThreadAnimating = true
                             }
-
+                            
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                                 isDayangSumbiVisible = true
                             }
@@ -169,7 +209,7 @@ struct Narration1View: View {
             }
         }
     }
-
+    
     private func startTextAnimation() {
         TextAnimation.animateText(text: fullText, displayedText: $displayedText) {}
     }

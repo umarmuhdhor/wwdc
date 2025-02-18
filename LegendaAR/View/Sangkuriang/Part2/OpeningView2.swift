@@ -7,11 +7,11 @@ struct OpeningView2: View {
     @State private var showNarrationView = false
     @State private var displayedText = ""
     let fullText = "Dayang Sumbi keeps her promise and marries Tumang. Time passes, and she becomes pregnant. Her father, Sang Prabu, summons her to the palace."
-
+    
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-
+            
             VStack {
                 CloseButton(isPresented: $showOpeningView)
                     .onTapGesture {
@@ -19,7 +19,7 @@ struct OpeningView2: View {
                         showOpeningView = false
                     }
                 Spacer()
-
+                
                 Text(displayedText)
                     .foregroundColor(.white)
                     .font(.title)
@@ -28,7 +28,7 @@ struct OpeningView2: View {
                     .onAppear {
                         startAnimation()
                     }
-
+                
                 Spacer()
             }
         }
