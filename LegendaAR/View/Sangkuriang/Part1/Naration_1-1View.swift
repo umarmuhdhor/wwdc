@@ -19,6 +19,8 @@ struct Narration1View: View {
     @Binding var showNarrationView: Bool
     @StateObject private var treasureState = TreasureHuntState()
     
+    @State private var textAnimationTimer: Timer?
+    
     let fullText = "Long ago, in the lush lands of Sunda, there lived a beautiful princess named Dayang Sumbi. She was known for her unmatched beauty and extraordinary skill in weaving."
     let dayangDialogue = "Oh no! My thread has fallen into the bushes! If someone retrieves it for me, if it's a woman, I will make her my lifelong sister, and if it's a man, I will marry him."
     
@@ -78,10 +80,19 @@ struct Narration1View: View {
                             HStack {
                                 Spacer()
                                 Button(action: {
+                                    // Hentikan audio
                                     audioManager.stopAudio()
-                                    isTextVisible = false
-                                    isSkipVisible = false
                                     
+                                    // Hentikan animasi teks
+                                    textAnimationTimer?.invalidate()
+                                    textAnimationTimer = nil
+                                    
+                                    // Kosongkan atau hentikan pembaruan teks
+                                    displayedText = "" // Kosongkan teks yang ditampilkan
+                                    isTextVisible = false // Sembunyikan teks
+                                    isSkipVisible = false // Sembunyikan tombol skip
+                                    
+                                    // Lanjutkan ke bagian berikutnya
                                     withAnimation(.linear(duration: 1.0)) {
                                         isThreadAnimating = true
                                     }
@@ -91,20 +102,20 @@ struct Narration1View: View {
                                     }
                                 }) {
                                     Text("Skip")
-                                        .font(.title2) // Adjusted font size
+                                        .font(.title2)
                                         .foregroundColor(.white)
                                         .padding(.vertical, 10)
                                         .padding(.horizontal, 20)
                                         .background(Color.black.opacity(0.7))
                                         .cornerRadius(15)
-                                        .shadow(radius: 10) // Added shadow for better visual depth
+                                        .shadow(radius: 10)
                                 }
-                                .padding(.top, geo.size.height * 0.05) // Positioning it at the top
-                                .padding(.trailing, geo.size.width * 0.1) // Adding right padding
-                                .zIndex(1) // Ensure it's in front of other elements
+                                .padding(.top, geo.size.height * 0.05)
+                                .padding(.trailing, geo.size.width * 0.1)
+                                .zIndex(1)
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensures button stays centered vertically
-                            .offset(y: geo.size.height * -0.3) // Adjust vertical positioning to be closer to the top
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .offset(y: geo.size.height * -0.3)
                         }
                     }
 
@@ -211,7 +222,12 @@ struct Narration1View: View {
     }
     
     private func startTextAnimation() {
-        TextAnimation.animateText(text: fullText, displayedText: $displayedText) {}
+        textAnimationTimer = TextAnimation.animateText(
+            text: fullText,
+            displayedText: $displayedText
+        ) {
+            // Aksi setelah animasi selesai
+        }
     }
 }
 
