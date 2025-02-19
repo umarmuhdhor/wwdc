@@ -118,7 +118,6 @@ struct Narration1_2View: View {
                             
                             HStack(spacing: 20) {
                                 Button(action: {
-                                    audioManager.playAudio(filename: "right")
                                     handleAnswer(correct: true)
                                 }) {
                                     Text("Fulfill her promise")
@@ -135,7 +134,6 @@ struct Narration1_2View: View {
                                 }
                                 
                                 Button(action: {
-                                    audioManager.playAudio(filename: "wrong")
                                     handleAnswer(correct: false)
                                 }) {
                                     Text("Break her promise and reject him")
@@ -294,7 +292,9 @@ struct Narration1_2View: View {
         if correct {
             showQuiz = false
             showCorrectAnswer = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            
+            audioManager.playAudio(filename: "right")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                 showCorrectAnswer = false
                 playDayangSumbiDialogue()
             }

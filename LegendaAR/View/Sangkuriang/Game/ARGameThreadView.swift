@@ -102,6 +102,9 @@ struct ARThreadGameView: View {
                 }
             }
         }
+        .navigationBarHidden(true)
+        .ignoresSafeArea()
+        .edgesIgnoringSafeArea(.all)
         .forceLandscape()
         .background(
             NavigationLink(destination: Narration1_2View(showNarrationView: $navigateToNextView), isActive: $navigateToNextView) {

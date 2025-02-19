@@ -3,6 +3,12 @@ import ARKit
 import RealityKit
 import Combine
 
+// MARK: - Protocol
+protocol ARViewControllerDelegate: AnyObject {
+    func arViewController(_ controller: ARViewController, didTapSangkuriang entity: Entity)
+}
+
+// MARK: - Main View
 struct ARHuntingSceneView: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @State private var displayedText = ""
@@ -19,18 +25,15 @@ struct ARHuntingSceneView: View {
     
     var body: some View {
         ZStack {
-            // AR View takes full screen
             ARViewControllerRepresentable(
                 isSangkuriangTappable: $isSangkuriangTappable,
                 onSangkuriangTapped: playDialogue
             )
-            .edgesIgnoringSafeArea(.all)
             .ignoresSafeArea()
             
-            // Overlay content
             GeometryReader { geometry in
                 VStack {
-                    // Top Bar with Back Button
+                    // Top Bar
                     HStack {
                         Button(action: {
                             audioManager.stopAudio()
@@ -48,7 +51,6 @@ struct ARHuntingSceneView: View {
                         
                         Spacer()
                         
-                        // Close button
                         CloseButton(isPresented: $showHuntingView)
                             .padding(.trailing, 20)
                             .onTapGesture {
@@ -60,7 +62,7 @@ struct ARHuntingSceneView: View {
                     
                     Spacer()
                     
-                    // Warning or Dialogue Text
+                    // Warning Text
                     if isWarningVisible {
                         Text(warningText)
                             .font(.headline)
@@ -74,6 +76,7 @@ struct ARHuntingSceneView: View {
                             .animation(.easeInOut, value: isWarningVisible)
                     }
                     
+                    // Dialogue Text
                     if isTextVisible {
                         DialogueTextView(text: displayedText)
                             .frame(width: geometry.size.width * 0.95)
@@ -93,19 +96,17 @@ struct ARHuntingSceneView: View {
             }
         }
         .navigationBarHidden(true)
-        .ignoresSafeArea()
-        .edgesIgnoringSafeArea(.all)
-        .onAppear {
-            startScene()
-        }
+        .onAppear(perform: startScene)
         .onDisappear {
             audioManager.stopAudio()
+        }
+        .fullScreenCover(isPresented: $navigateToNextScene) {
+            HuntingGameView(showGameView: $navigateToNextScene)
         }
         .forceLandscape()
     }
     
     private func startScene() {
-        // Show warning after 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             withAnimation {
                 isWarningVisible = true
@@ -115,14 +116,12 @@ struct ARHuntingSceneView: View {
     }
     
     private func playDialogue() {
-        // Hide warning and show dialogue
         withAnimation {
             isWarningVisible = false
             isSangkuriangTappable = false
             isTextVisible = true
         }
         
-        // Play audio and show dialogue
         audioManager.playAudio(filename: "Sangkuriang_Hunt")
         DialogueManager.playDialogue(
             text: dialogueText,
@@ -131,7 +130,6 @@ struct ARHuntingSceneView: View {
             displayedText: $displayedText,
             isTextVisible: $isTextVisible
         ) {
-            // Show next button after dialogue
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 withAnimation {
                     isNextButtonVisible = true
@@ -141,7 +139,119 @@ struct ARHuntingSceneView: View {
     }
 }
 
-// AR View Controller
+// MARK: - AR View Controller
+class ARViewController: UIViewController {
+    weak var delegate: ARViewControllerDelegate?
+    private var arView: ARView!
+    private var sangkuriangEntity: Entity?
+    private var cancellables = Set<AnyCancellable>()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupAR()
+    }
+    
+    private func setupAR() {
+        arView = ARView(frame: view.bounds)
+        view.addSubview(arView)
+        
+        let config = ARWorldTrackingConfiguration()
+        config.planeDetection = [.horizontal]
+        arView.session.run(config)
+        
+        setupCoachingOverlay()
+        setupPlaneDetection()
+        setupGestures()
+    }
+    
+    private func setupCoachingOverlay() {
+        let coachingOverlay = ARCoachingOverlayView()
+        coachingOverlay.goal = .horizontalPlane
+        coachingOverlay.session = arView.session
+        coachingOverlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        coachingOverlay.frame = arView.bounds
+        arView.addSubview(coachingOverlay)
+    }
+    
+    private func setupPlaneDetection() {
+        arView.session.delegate = self
+        arView.scene.subscribe(to: SceneEvents.Update.self) { [weak self] _ in
+            self?.updateScene()
+        }.store(in: &cancellables)
+    }
+    
+    private func setupGestures() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        arView.addGestureRecognizer(tapGesture)
+    }
+    
+    private func updateScene() {
+        guard sangkuriangEntity == nil,
+              let query = arView.makeRaycastQuery(from: arView.center,
+                                                allowing: .estimatedPlane,
+                                                alignment: .horizontal),
+              let result = arView.session.raycast(query).first else { return }
+        
+        placeSangkuriang(at: result)
+    }
+    
+    private func placeSangkuriang(at raycastResult: ARRaycastResult) {
+        Entity.loadModelAsync(named: "Sangkuriang_Jalan")
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("Failed to load Sangkuriang model: \(error)")
+                    }
+                },
+                receiveValue: { [weak self] entity in
+                    self?.setupSangkuriangEntity(entity, at: raycastResult)
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
+    private func setupSangkuriangEntity(_ entity: Entity, at raycastResult: ARRaycastResult) {
+        sangkuriangEntity = entity
+        
+        let anchorEntity = AnchorEntity(world: raycastResult.worldTransform)
+        entity.position = .zero
+        entity.scale = SIMD3(x: 1.0, y: 1.0, z: 1.0)
+        
+        if let animation = entity.availableAnimations.first {
+            entity.playAnimation(animation.repeat(count: .max))
+        }
+        
+        anchorEntity.addChild(entity)
+        arView.scene.addAnchor(anchorEntity)
+    }
+    
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: arView)
+        if let entity = arView.entity(at: location), entity == sangkuriangEntity {
+            delegate?.arViewController(self, didTapSangkuriang: entity)
+        }
+    }
+}
+
+// MARK: - AR Session Delegate
+extension ARViewController: ARSessionDelegate {
+    func session(_ session: ARSession, didFailWithError error: Error) {
+        print("AR Session failed: \(error)")
+    }
+    
+    func sessionWasInterrupted(_ session: ARSession) {
+        print("AR Session was interrupted")
+    }
+    
+    func sessionInterruptionEnded(_ session: ARSession) {
+        print("AR Session interruption ended")
+        let config = ARWorldTrackingConfiguration()
+        config.planeDetection = [.horizontal]
+        arView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
+    }
+}
+
+// MARK: - SwiftUI Representable
 struct ARViewControllerRepresentable: UIViewControllerRepresentable {
     @Binding var isSangkuriangTappable: Bool
     var onSangkuriangTapped: () -> Void
@@ -175,83 +285,5 @@ struct ARViewControllerRepresentable: UIViewControllerRepresentable {
                 onSangkuriangTapped()
             }
         }
-    }
-}
-
-// Protocol for AR View Controller delegate
-protocol ARViewControllerDelegate: AnyObject {
-    func arViewController(_ controller: ARViewController, didTapSangkuriang entity: Entity)
-}
-
-// AR View Controller
-class ARViewController: UIViewController {
-    weak var delegate: ARViewControllerDelegate?
-    private var arView: ARView!
-    private var sangkuriangEntity: Entity?
-    private var cancellables = Set<AnyCancellable>()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupAR()
-    }
-    
-    private func setupAR() {
-        arView = ARView(frame: view.bounds)
-        view.addSubview(arView)
-        
-        // Configure AR session
-        let config = ARWorldTrackingConfiguration()
-        arView.session.run(config)
-        
-        // Load and place Sangkuriang 3D model
-        loadSangkuriang()
-        
-        // Add tap gesture
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        arView.addGestureRecognizer(tapGesture)
-    }
-    
-    private func loadSangkuriang() {
-        // Load Sangkuriang model asynchronously
-        Entity.loadModelAsync(named: "Sangkuriang_Jalan")
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .failure(let error):
-                    print("Failed to load Sangkuriang model: \(error)")
-                case .finished:
-                    break
-                }
-            }, receiveValue: { [weak self] entity in
-                self?.sangkuriangEntity = entity
-                
-                // Position the entity in the scene
-                entity.position = SIMD3(x: 0, y: 0, z: -2)
-                
-                // Play walking animation if available
-                if let animation = entity.availableAnimations.first {
-                    // Play the animation in a loop
-                    entity.playAnimation(animation.repeat(count: .max))
-                }
-                
-                // Add to scene
-                let anchorEntity = AnchorEntity(world: entity.position)
-                anchorEntity.addChild(entity)
-                self?.arView.scene.addAnchor(anchorEntity)
-            })
-            .store(in: &cancellables)
-    }
-    
-    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
-        let location = gesture.location(in: arView)
-        
-        if let entity = arView.entity(at: location), entity == sangkuriangEntity {
-            delegate?.arViewController(self, didTapSangkuriang: entity)
-        }
-    }
-}
-
-struct ARHuntingSceneView_Previews: PreviewProvider {
-    static var previews: some View {
-        ARHuntingSceneView(showHuntingView: .constant(true))
     }
 }

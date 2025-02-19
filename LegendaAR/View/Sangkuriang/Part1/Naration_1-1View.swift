@@ -17,6 +17,8 @@ struct Narration1View: View {
     @State private var navigateToARView = false
     @State private var isSkipVisible = false
     @Binding var showNarrationView: Bool
+    @State private var curtainOffset: CGFloat = 0
+    @State private var isCurtainOpen = false
     @StateObject private var treasureState = TreasureHuntState()
     
     @State private var textAnimationTimer: Timer?
@@ -33,21 +35,15 @@ struct Narration1View: View {
                         .scaledToFill()
                         .edgesIgnoringSafeArea(.all)
                     
-                    // Curtain effect
-                    HStack {
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(width: geo.size.width / 1.7)
-                            .offset(x: coverScaleX == 1.0 ? -3 : -geo.size.width / 1.5)
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(width: geo.size.width / 2)
-                            .offset(x: coverScaleX == 1.0 ? -3 : geo.size.width / 1.5)
+                    HStack(spacing: 0) {
+                        CurtainView(side: .left, offset: curtainOffset)
+                        CurtainView(side: .right, offset: curtainOffset)
                     }
-                    .animation(.easeOut(duration: 3.0), value: coverScaleX)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .onAppear {
-                        withAnimation(.easeOut(duration: 3.0)) {
-                            coverScaleX = -3
+                        withAnimation(.easeInOut(duration: 2.0)) {
+                            curtainOffset = geo.size.width
+                            isCurtainOpen = true
                         }
                     }
                     
@@ -209,12 +205,32 @@ struct Narration1View: View {
         textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText
-        ) {
-            // Aksi setelah animasi selesai
-        }
+        ) {}
     }
 }
 
+struct CurtainView: View {
+    enum Side {
+        case left, right
+    }
+    
+    let side: Side
+    let offset: CGFloat
+    
+    var body: some View {
+        Rectangle()
+            .fill(Color.black)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .offset(x: side == .left ? -offset : offset)
+            .animation(.easeInOut(duration: 3.0), value: offset)
+    }
+}
+
+extension Animation {
+    static func smoothCurtain() -> Animation {
+        .interpolatingSpring(stiffness: 100, damping: 15)
+    }
+}
 
 struct Narration1View_Previews: PreviewProvider {
     static var previews: some View {

@@ -42,14 +42,14 @@ struct Narration2View: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.5)
-                            .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.18)
+                            .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.15)
                     }
                     
                     if isDayangSumbiVisible {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.5)
+                            .frame(width: geo.size.width * 0.4)
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                     }
                     
@@ -67,7 +67,7 @@ struct Narration2View: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.25)
-                            .offset(x: geo.size.width * 0.23, y: geo.size.height * 0.4)
+                            .offset(x: geo.size.width * 0.35, y: geo.size.height * 0.32)
                             .transition(.opacity)
                     }
                     
@@ -113,7 +113,6 @@ struct Narration2View: View {
                             
                             HStack(spacing: 20) {
                                 Button(action: {
-                                    audioManager.playAudio(filename: "wrong")
                                     handleAnswer(correct: false)
                                 }) {
                                     Text("Ignore the situation and avoid responsibility")
@@ -130,7 +129,6 @@ struct Narration2View: View {
                                 }
                                 
                                 Button(action: {
-                                    audioManager.playAudio(filename: "right")
                                     handleAnswer(correct: true)
                                 }) {
                                     Text("Take responsibility for his actions")
@@ -278,6 +276,7 @@ struct Narration2View: View {
         if correct {
             showQuiz = false
             showCorrectAnswer = true
+            audioManager.playAudio(filename: "right")
             DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                 showCorrectAnswer = false
                 continueTumangDialogue()
