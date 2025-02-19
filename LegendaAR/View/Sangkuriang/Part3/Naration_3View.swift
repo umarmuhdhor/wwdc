@@ -101,9 +101,7 @@ struct Narration3View: View {
             .onDisappear {
                 audioManager.stopAudio()
             }
-            .fullScreenCover(isPresented: $showHuntingGame) {
-                HuntingGameView(showGameView: $showHuntingGame)
-            }
+
             .forceLandscape()
         }
     }
