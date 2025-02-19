@@ -58,8 +58,9 @@ struct OpeningView: View {
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                ShipPuzzleGameView(showPuzzleView: $z)
+                Narration1View(showNarrationView: $z)
             }
+            .transaction { $0.disablesAnimations = true }
         }
         
     }
@@ -70,7 +71,7 @@ struct OpeningView: View {
             try audioSession.setCategory(.playback, mode: .default, options: [])
             try audioSession.setActive(true)
             
-            audioManager.playAudio(filename: "Ketikan")
+            audioManager.playAudio(filename: "Typing")
             let audioDuration = audioManager.audioPlayer?.duration ?? 5
             
             DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {

@@ -41,24 +41,24 @@ struct Narration2View: View {
                         Image("SangPrabu")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.4)
-                            .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.1)
+                            .frame(width: geo.size.width * 0.5)
+                            .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.18)
                     }
                     
                     if isDayangSumbiVisible {
-                        Image("DayangSumbi_Hamil")
+                        Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.5)
-                            .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.1)
+                            .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                     }
                     
                     if isTumangHumanVisible {
                         Image("Tumang")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.3)
-                            .offset(x: geo.size.width * 0.25, y: geo.size.height * 0.1)
+                            .frame(width: geo.size.width * 0.5)
+                            .offset(x: geo.size.width * 0.35, y: geo.size.height * 0.2)
                             .transition(.move(edge: .trailing))
                     }
                     
@@ -66,8 +66,8 @@ struct Narration2View: View {
                         Image("Tumang_dog")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.15)
-                            .offset(x: geo.size.width * 0.23, y: geo.size.height * 0.2)
+                            .frame(width: geo.size.width * 0.25)
+                            .offset(x: geo.size.width * 0.23, y: geo.size.height * 0.4)
                             .transition(.opacity)
                     }
                     

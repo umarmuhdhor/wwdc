@@ -6,15 +6,15 @@ struct ARThreadGameView: View {
     @State private var navigateToNextView = false
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // AR View takes full screen - simplified safe area handling
-                ARThreadViewControllerRepresentable(state: state)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .edgesIgnoringSafeArea(.all)
-                
-                // Overlay content
-                VStack(spacing: 0) {
+        ZStack {
+            // AR View takes full screen
+            ARThreadViewControllerRepresentable(state: state)
+                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
+            
+            // Overlay content
+            GeometryReader { geometry in
+                VStack {
                     // Top Bar (Back Button + Counter + Zoom Button)
                     HStack {
                         // Back button
@@ -30,6 +30,7 @@ struct ARThreadGameView: View {
                                 .shadow(radius: 5)
                         }
                         .padding(.leading, 20)
+                        
                         
                         Spacer()
                         
@@ -59,7 +60,7 @@ struct ARThreadGameView: View {
                             .shadow(radius: 5)
                             .padding(.trailing, 20)
                     }
-                    .padding(.top, geometry.safeAreaInsets.top)
+                    .padding(.top, geometry.safeAreaInsets.top + 10)
                     
                     Spacer()
                     
@@ -73,7 +74,7 @@ struct ARThreadGameView: View {
                             .foregroundColor(.white)
                             .cornerRadius(10)
                             .shadow(radius: 5)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                             .transition(.opacity)
                             .animation(.easeInOut, value: state.foundCount)
                     } else {
@@ -89,28 +90,24 @@ struct ARThreadGameView: View {
                                 .shadow(radius: 5)
                                 .padding(.bottom, 10)
                         }
-                        .padding(.bottom, 20)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom + 20)
                         .transition(.opacity)
                         .animation(.easeInOut, value: state.foundCount)
                         .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                                 navigateToNextView = true
                             }
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .navigationBarHidden(true)
-        .edgesIgnoringSafeArea(.all)
-        .ignoresSafeArea()
         .forceLandscape()
         .background(
             NavigationLink(destination: Narration1_2View(showNarrationView: $navigateToNextView), isActive: $navigateToNextView) {
                 EmptyView()
             }
-            .hidden()
+                .hidden()
         )
     }
 }

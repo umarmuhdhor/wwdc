@@ -37,17 +37,17 @@ struct Narration1View: View {
                     HStack {
                         Rectangle()
                             .fill(Color.black)
-                            .frame(width: geo.size.width / 2)
-                            .offset(x: coverScaleX == 1.0 ? 0 : -geo.size.width / 2)
+                            .frame(width: geo.size.width / 1.7)
+                            .offset(x: coverScaleX == 1.0 ? -3 : -geo.size.width / 1.5)
                         Rectangle()
                             .fill(Color.black)
                             .frame(width: geo.size.width / 2)
-                            .offset(x: coverScaleX == 1.0 ? 0 : geo.size.width / 2)
+                            .offset(x: coverScaleX == 1.0 ? -3 : geo.size.width / 1.5)
                     }
                     .animation(.easeOut(duration: 3.0), value: coverScaleX)
                     .onAppear {
                         withAnimation(.easeOut(duration: 3.0)) {
-                            coverScaleX = 0.0
+                            coverScaleX = -3
                         }
                     }
                     

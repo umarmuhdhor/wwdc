@@ -66,7 +66,7 @@ struct OpeningView2: View {
             try audioSession.setCategory(.playback, mode: .default, options: [])
             try audioSession.setActive(true)
             
-            audioManager.playAudio(filename: "Ketikan")
+            audioManager.playAudio(filename: "Typing")
             let audioDuration = audioManager.audioPlayer?.duration ?? 5
             
             DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {
