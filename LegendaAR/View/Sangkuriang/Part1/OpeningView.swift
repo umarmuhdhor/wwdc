@@ -5,6 +5,7 @@ struct OpeningView: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
+    @State private var z = false
     @State private var displayedText = ""
     let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
     
@@ -40,7 +41,7 @@ struct OpeningView: View {
                         NextButton(title: "Skip") {
                             audioManager.stopAudio()
                             withAnimation(.easeInOut(duration: 0.3)) {
-                                showNarrationView = true
+                                z = true
                             }
                         }
                         .padding(.trailing, geo.size.width * 0.08)
@@ -56,8 +57,8 @@ struct OpeningView: View {
                 audioManager.stopAudio()
             }
             .forceLandscape()
-            .fullScreenCover(isPresented: $showNarrationView) {
-                Narration1View(showNarrationView: $showNarrationView)
+            .fullScreenCover(isPresented: $z) {
+                ShipPuzzleGameView(showPuzzleView: $z)
             }
         }
         
