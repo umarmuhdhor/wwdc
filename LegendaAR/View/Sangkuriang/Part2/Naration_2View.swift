@@ -192,7 +192,8 @@ struct Narration2View: View {
                     // Dialogue Text Views
                     if isTextVisible {
                         Text(displayedText)
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.body)
+                            .fontWeight(.semibold)
                             .multilineTextAlignment(.center)
                             .padding()
                             .background(Color.white.opacity(0.6))

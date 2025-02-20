@@ -8,6 +8,9 @@ struct Narration6View: View {
     @State private var isNextButtonVisible = false
     @State private var isDayangSumbiVisible = false
     @State private var isSangkuriangVisible = false
+    @State private var showPuzzleGame = false
+    @State private var isSkipVisible = false // New state for skip button
+    @State private var textAnimationTimer: Timer?
     @Binding var showNarrationView: Bool
     
     let narrationText = "Years later, Sangkuriang grew into a handsome and courageous man. Unknowingly, he met a beautiful woman who turned out to be his mother, Dayang Sumbi."
@@ -25,13 +28,36 @@ struct Narration6View: View {
                     .edgesIgnoringSafeArea(.all)
                 
                 VStack {
-                    CloseButton(isPresented: $showNarrationView)
-                        .padding(.top, 20)
-                        .padding(.trailing, 20)
-                        .onTapGesture {
-                            audioManager.stopAudio()
-                            showNarrationView = false
+                    HStack {
+                        if isSkipVisible {
+                            NextButton(title: "Skip Narration") {
+                                audioManager.stopAudio()
+                                
+                                // Hentikan animasi teks
+                                textAnimationTimer?.invalidate()
+                                textAnimationTimer = nil
+                                
+                                // Kosongkan atau hentikan pembaruan teks
+                                displayedText = "" // Kosongkan teks yang ditampilkan
+                                isTextVisible = false // Sembunyikan teks
+                                isSkipVisible = false // Sembunyikan tombol skip
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                    isDayangSumbiVisible = true
+                                }
+                            }
                         }
+                        
+                        Spacer()
+                        CloseButton(isPresented: $showNarrationView)
+                            .onTapGesture {
+                                audioManager.stopAudio()
+                                showNarrationView = false
+                            }
+                    }
+                    .padding(.top, 20)
+                    .padding(.horizontal, 20)
+                    
                     Spacer()
                 }
                 
@@ -69,9 +95,9 @@ struct Narration6View: View {
                         Spacer()
                         HStack {
                             Spacer()
-                            NextButton(title: "Next") {
+                            NextButton(title: "Build a boat") {
                                 audioManager.stopAudio()
-                                showNarrationView = false
+                                showPuzzleGame = true
                             }
                             .padding(.trailing, 30)
                             .padding(.bottom, 30)
@@ -80,31 +106,41 @@ struct Narration6View: View {
                 }
             }
             .onAppear {
-                audioManager.playAudio(filename: "Narasi6")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                    showNarrationText(narrationText) {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                            isSangkuriangVisible = true
-                            
-                            playDialogue(text: sangkuriangText1, audio: "Sangkuriang6_1") {
-                                isDayangSumbiVisible = true
-                                
-                                playDialogue(text: dayangSumbiText1, audio: "DayangSumbi6_1") {
-                                    playDialogue(text: sangkuriangText2, audio: "Sangkuriang6_2") {
-                                        playDialogue(text: dayangSumbiText2, audio: "DayangSumbi6_2") {
-                                            isNextButtonVisible = true
-                                        }
-                                    }
+                startNarration()
+            }
+            .onDisappear {
+                audioManager.stopAudio()
+            }
+            .fullScreenCover(isPresented: $showPuzzleGame) {
+                ShipPuzzleGameView(showPuzzleView: $showPuzzleGame)
+            }
+            .forceLandscape()
+        }
+    }
+    
+    private func startNarration() {
+        audioManager.playAudio(filename: "Narasi6")
+        isSkipVisible = true // Show skip button when narration starts
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+            showNarrationText(narrationText) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                    isSangkuriangVisible = true
+                    
+                    playDialogue(text: sangkuriangText1, audio: "Sangkuriang6_1") {
+                        isDayangSumbiVisible = true
+                        
+                        playDialogue(text: dayangSumbiText1, audio: "DayangSumbi6_1") {
+                            playDialogue(text: sangkuriangText2, audio: "Sangkuriang6_2") {
+                                playDialogue(text: dayangSumbiText2, audio: "DayangSumbi6_2") {
+                                    isNextButtonVisible = true
+                                    isSkipVisible = false // Hide skip button when narration ends
                                 }
                             }
                         }
                     }
                 }
             }
-            .onDisappear {
-                audioManager.stopAudio()
-            }
-            .forceLandscape()
         }
     }
     
@@ -129,17 +165,11 @@ struct Narration6View: View {
     
     private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
         isTextVisible = true
-        displayedText = text // Instantly display all text
+        displayedText = text
         audioManager.playAudio(filename: audio)
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             isTextVisible = false
             completion()
         }
-    }
-}
-
-struct Narration6View_Previews: PreviewProvider {
-    static var previews: some View {
-        Narration6View(showNarrationView: .constant(true))
     }
 }

@@ -58,7 +58,7 @@ struct OpeningView: View {
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                Narration3View(showNarrationView: $z)
+                Narration1View(showNarrationView: $z)
             }
 //            .fullScreenCover(isPresented: $z) {
 //                HuntingGameView(showGameView: $z)
