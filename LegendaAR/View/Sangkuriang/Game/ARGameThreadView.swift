@@ -94,7 +94,7 @@ struct ARThreadGameView: View {
                         .transition(.opacity)
                         .animation(.easeInOut, value: state.foundCount)
                         .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                 navigateToNextView = true
                             }
                         }

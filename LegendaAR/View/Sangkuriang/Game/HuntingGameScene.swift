@@ -55,20 +55,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         background.size = self.size
         background.zPosition = -1
         addChild(background)
-        
-        // Ground setup
-        let ground = SKSpriteNode(imageNamed: "ground")
-        ground.position = CGPoint(x: frame.midX, y: 50)
-        ground.size = CGSize(width: frame.width, height: 100)
-        ground.zPosition = 0
-        
-        let groundPhysics = SKPhysicsBody(rectangleOf: ground.size)
-        ground.physicsBody = groundPhysics
-        ground.physicsBody?.isDynamic = false
-        ground.physicsBody?.categoryBitMask = PhysicsCategory.boundary
-        ground.physicsBody?.collisionBitMask = PhysicsCategory.arrow | PhysicsCategory.tumang
-        
-        addChild(ground)
     }
     
     private func setupCharacters() {
@@ -80,8 +66,8 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         addChild(sangkuriang)
         
         // Tumang setup
-        tumang = SKSpriteNode(imageNamed: "tumang")
-        tumang.position = CGPoint(x: frame.midX + 200, y: 120)
+        tumang = SKSpriteNode(imageNamed: "Tumang_dog")
+        tumang.position = CGPoint(x: frame.midX + 200, y: tumang.size.height / 2) // Positioned at the bottom of the screen
         tumang.setScale(0.3)
         tumang.zPosition = 1
         
@@ -121,7 +107,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupInstructions() {
-        let instructions = SKLabelNode(text: "Tarik ke belakang untuk membidik, lepas untuk menembak")
+        let instructions = SKLabelNode(text: "Pull back to aim, release to shoot")
         instructions.position = CGPoint(x: frame.midX, y: frame.maxY - 50)
         instructions.fontName = "HelveticaNeue-Bold"
         instructions.fontSize = 24
@@ -144,7 +130,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         
         arrow = SKSpriteNode(imageNamed: "arrow")
         arrow.position = bow.position
-        arrow.setScale(0.3)
+        arrow.setScale(0.1)
         arrow.zPosition = 2
         
         arrow.physicsBody = SKPhysicsBody(rectangleOf: arrow.size)
@@ -318,7 +304,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func showMissMessage() {
-        let missLabel = SKLabelNode(text: "Meleset! Coba lagi")
+        let missLabel = SKLabelNode(text: "Missed! Try again")
         missLabel.fontName = "HelveticaNeue-Bold"
         missLabel.fontSize = 32
         missLabel.fontColor = .red
@@ -392,10 +378,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         switch choice {
         case "handOver":
             gameState = .completed
-            NotificationCenter.default.post(
-                name: Notification.Name("GameCompleted"),
-                object: nil
-            )
+            showCompletionScreen()
         case "search":
             resetScene()
         default:
@@ -403,6 +386,32 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
         
         dialogBox?.removeFromParent()
+    }
+    
+    private func showCompletionScreen() {
+        let completionBackground = SKSpriteNode(color: .black, size: CGSize(width: frame.width, height: frame.height))
+        completionBackground.position = CGPoint(x: frame.midX, y: frame.midY)
+        completionBackground.alpha = 0.8
+        completionBackground.zPosition = 10
+        
+        let completionLabel = SKLabelNode(text: "Game Completed!")
+        completionLabel.fontName = "HelveticaNeue-Bold"
+        completionLabel.fontSize = 40
+        completionLabel.fontColor = .green
+        completionLabel.position = CGPoint(x: 0, y: 50)
+        completionLabel.zPosition = 11
+        
+        let restartButton = createButton(
+            text: "Restart Game",
+            position: CGPoint(x: 0, y: -50),
+            action: { [weak self] in
+                self?.resetScene()
+            }
+        )
+        
+        completionBackground.addChild(completionLabel)
+        completionBackground.addChild(restartButton)
+        addChild(completionBackground)
     }
     
     private func resetScene() {
@@ -421,7 +430,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         // Reset Tumang
         tumang.physicsBody?.isDynamic = false
         tumang.physicsBody?.affectedByGravity = false
-        tumang.position = CGPoint(x: frame.midX + 200, y: 120)
+        tumang.position = CGPoint(x: frame.midX + 200, y: tumang.size.height / 2)
         tumang.zRotation = 0
         
         // Reset game state

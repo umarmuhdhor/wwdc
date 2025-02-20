@@ -318,7 +318,7 @@ struct Narration1_2View: View {
             displayedText: $displayedText,
             isTextVisible: $isDayangTextVisible
         ) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now()) {
                 isNextButtonVisible = true
             }
         }

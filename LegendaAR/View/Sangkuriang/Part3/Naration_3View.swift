@@ -137,8 +137,11 @@ struct Narration3View: View {
                 .onDisappear {
                     audioManager.stopAudio()
                 }
+//                .fullScreenCover(isPresented: $showHuntingGame) {
+//                    ARHuntingSceneView(showHuntingView: $showHuntingGame)
+//                }
                 .fullScreenCover(isPresented: $showHuntingGame) {
-                    ARHuntingSceneView(showHuntingView: $showHuntingGame)
+                    HuntingGameView(showGameView: $showHuntingGame)
                 }
                 .forceLandscape()
             }
@@ -159,7 +162,7 @@ struct Narration3View: View {
                 index += 1
             } else {
                 timer.invalidate()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     isTextVisible = false
                     completion()
                 }

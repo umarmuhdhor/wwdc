@@ -277,7 +277,7 @@ struct Narration2View: View {
             showQuiz = false
             showCorrectAnswer = true
             audioManager.playAudio(filename: "right")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 showCorrectAnswer = false
                 continueTumangDialogue()
             }

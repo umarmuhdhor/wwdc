@@ -57,8 +57,11 @@ struct OpeningView: View {
                 audioManager.stopAudio()
             }
             .forceLandscape()
+//            .fullScreenCover(isPresented: $z) {
+//                Narration1View(showNarrationView: $z)
+//            }
             .fullScreenCover(isPresented: $z) {
-                Narration1View(showNarrationView: $z)
+                HuntingGameView(showGameView: $z)
             }
             .transaction { $0.disablesAnimations = true }
         }
