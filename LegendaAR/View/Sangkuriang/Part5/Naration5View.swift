@@ -20,7 +20,7 @@ struct Narration5View: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Image("background_narasi5")
+                Image("background_narasi1")
                     .resizable()
                     .scaledToFill()
                     .edgesIgnoringSafeArea(.all)
@@ -104,7 +104,8 @@ struct Narration5View: View {
         isTextVisible = true
         displayedText = text
         audioManager.playAudio(filename: audio)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        let narrationDuration = audioManager.audioPlayer?.duration ?? 5
+        DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration) {
             isTextVisible = false
             completion()
         }

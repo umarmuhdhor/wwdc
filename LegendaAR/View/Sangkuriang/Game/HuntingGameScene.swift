@@ -2,6 +2,8 @@ import SpriteKit
 import GameplayKit
 
 class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
+    private var audioManager = AudioPlayerManager()
+    
     // MARK: - Properties
     private var sangkuriang: SKSpriteNode!
     private var bow: SKSpriteNode!
@@ -19,6 +21,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     private var shootingPower: CGFloat = 0
     private var gameState: GameState = .aiming
     private var dialogBox: SKNode?
+    private var winSound: SKAction!
     
     // Configuration Constants
     private let maxShootingDistance: CGFloat = 800.0
@@ -65,9 +68,9 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         sangkuriang.zPosition = 1
         addChild(sangkuriang)
         
-        // Tumang setup
+        // Tumang setup - Modified to be at the bottom
         tumang = SKSpriteNode(imageNamed: "Tumang_dog")
-        tumang.position = CGPoint(x: frame.midX + 200, y: tumang.size.height / 2) // Positioned at the bottom of the screen
+        tumang.position = CGPoint(x: frame.midX + 200, y: 50) // Fixed position at bottom
         tumang.setScale(0.3)
         tumang.zPosition = 1
         
@@ -287,7 +290,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
             tumang.physicsBody?.affectedByGravity = true
             
             gameState = .choosing
-            showChoiceDialog()
+            showGameComplete()
         } else if contact.bodyA.categoryBitMask == PhysicsCategory.arrow ||
                     contact.bodyB.categoryBitMask == PhysicsCategory.arrow {
             arrow.physicsBody?.isDynamic = false
@@ -318,41 +321,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    private func showChoiceDialog() {
-        let dialogBackground = SKSpriteNode(color: .black, size: CGSize(width: 500, height: 300))
-        dialogBackground.position = CGPoint(x: frame.midX, y: frame.midY)
-        dialogBackground.alpha = 0.8
-        dialogBackground.zPosition = 10
-        
-        let title = SKLabelNode(text: "What will you do?")
-        title.position = CGPoint(x: 0, y: 80)
-        title.fontName = "HelveticaNeue-Bold"
-        title.fontSize = 28
-        title.fontColor = .white
-        
-        let handOverButton = createButton(
-            text: "Hand over Tumang's heart",
-            position: CGPoint(x: 0, y: 20),
-            action: { [weak self] in
-                self?.handleChoice(choice: "handOver")
-            }
-        )
-        
-        let searchButton = createButton(
-            text: "Search for another animal",
-            position: CGPoint(x: 0, y: -40),
-            action: { [weak self] in
-                self?.handleChoice(choice: "search")
-            }
-        )
-        
-        dialogBackground.addChild(title)
-        dialogBackground.addChild(handOverButton)
-        dialogBackground.addChild(searchButton)
-        addChild(dialogBackground)
-        dialogBox = dialogBackground
-    }
-    
     private func createButton(text: String, position: CGPoint, action: @escaping () -> Void) -> SKNode {
         let button = SKSpriteNode(color: .blue, size: CGSize(width: 300, height: 50))
         button.position = position
@@ -374,44 +342,48 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         return button
     }
     
-    private func handleChoice(choice: String) {
-        switch choice {
-        case "handOver":
-            gameState = .completed
-            showCompletionScreen()
-        case "search":
-            resetScene()
-        default:
-            break
-        }
-        
-        dialogBox?.removeFromParent()
-    }
-    
-    private func showCompletionScreen() {
-        let completionBackground = SKSpriteNode(color: .black, size: CGSize(width: frame.width, height: frame.height))
-        completionBackground.position = CGPoint(x: frame.midX, y: frame.midY)
-        completionBackground.alpha = 0.8
-        completionBackground.zPosition = 10
-        
-        let completionLabel = SKLabelNode(text: "Game Completed!")
-        completionLabel.fontName = "HelveticaNeue-Bold"
-        completionLabel.fontSize = 40
-        completionLabel.fontColor = .green
-        completionLabel.position = CGPoint(x: 0, y: 50)
-        completionLabel.zPosition = 11
-        
-        let restartButton = createButton(
-            text: "Restart Game",
-            position: CGPoint(x: 0, y: -50),
-            action: { [weak self] in
-                self?.resetScene()
-            }
-        )
-        
-        completionBackground.addChild(completionLabel)
-        completionBackground.addChild(restartButton)
-        addChild(completionBackground)
+    private func showGameComplete() {
+        // Play audio
+        audioManager.playAudio(filename: "right")
+
+        // Create a semi-transparent black background
+        let background = SKSpriteNode(color: .black, size: CGSize(width: frame.width, height: frame.height))
+        background.alpha = 0.7
+        background.zPosition = 11
+        background.position = CGPoint(x: frame.midX, y: frame.midY)
+        addChild(background)
+
+        // Create the "Game Complete" label
+        let gameCompleteLabel = SKLabelNode(text: "🎉  You Win !!!  🎉")
+        gameCompleteLabel.fontName = "HelveticaNeue-Bold"
+        gameCompleteLabel.fontSize = 24
+        gameCompleteLabel.fontColor = .white
+        gameCompleteLabel.zPosition = 12
+        gameCompleteLabel.horizontalAlignmentMode = .center
+        gameCompleteLabel.verticalAlignmentMode = .center
+
+        // Calculate the size of the label background
+        let padding: CGFloat = 30
+        let labelWidth = gameCompleteLabel.frame.width + padding
+        let labelHeight = gameCompleteLabel.frame.height + padding
+
+        // Create a rounded rectangle background for the label
+        let labelBackground = SKShapeNode(rect: CGRect(x: -labelWidth / 2, y: -labelHeight / 2, width: labelWidth, height: labelHeight), cornerRadius: 15)
+        labelBackground.fillColor = .green
+        labelBackground.strokeColor = .white
+        labelBackground.lineWidth = 2
+        labelBackground.alpha = 0.8
+        labelBackground.zPosition = 11
+        labelBackground.position = CGPoint(x: frame.midX, y: frame.midY)
+
+        // Add the label to the background
+        labelBackground.addChild(gameCompleteLabel)
+
+        // Add the label background to the scene
+        addChild(labelBackground)
+
+        // Send notification that the game is completed
+        NotificationCenter.default.post(name: Notification.Name("GameCompleted"), object: nil)
     }
     
     private func resetScene() {
@@ -439,6 +411,7 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         shootingPower = 0
     }
 }
+
 
 // MARK: - Physics Categories
 struct PhysicsCategory {

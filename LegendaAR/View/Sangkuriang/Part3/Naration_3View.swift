@@ -8,8 +8,7 @@ struct Narration3View: View {
     @State private var isNextButtonVisible = false
     @State private var isDayangSumbiVisible = false
     @State private var isSangkuriangVisible = false
-    @State private var navigateToNextScene = false
-    @State private var showHuntingGame = false
+    @State private var showOpeningView4 = false
     @State private var isSkipVisible = false
     @Binding var showNarrationView: Bool
     
@@ -102,7 +101,7 @@ struct Narration3View: View {
                                 Spacer()
                                 NextButton(title: "Next") {
                                     audioManager.stopAudio()
-                                    showHuntingGame = true
+                                    showOpeningView4 = true
                                 }
                                 .padding(.trailing, geo.size.width * 0.08)
                                 .padding(.bottom, geo.size.height * 0.1)
@@ -121,7 +120,7 @@ struct Narration3View: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration - 4) {
                                 isTextVisible = false
                                 isSkipVisible = false
-                                
+                                    
                                 isDayangSumbiVisible = true
                                 playDialogue(text: dayangSumbiText, audio: "DayangSumbi3_1") {
                                     isSangkuriangVisible = true
@@ -137,11 +136,8 @@ struct Narration3View: View {
                 .onDisappear {
                     audioManager.stopAudio()
                 }
-//                .fullScreenCover(isPresented: $showHuntingGame) {
-//                    ARHuntingSceneView(showHuntingView: $showHuntingGame)
-//                }
-                .fullScreenCover(isPresented: $showHuntingGame) {
-                    HuntingGameView(showGameView: $showHuntingGame)
+                .fullScreenCover(isPresented: $showOpeningView4) {
+                    OpeningView4(showOpeningView: $showOpeningView4)
                 }
                 .forceLandscape()
             }
@@ -162,7 +158,7 @@ struct Narration3View: View {
                 index += 1
             } else {
                 timer.invalidate()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
                     isTextVisible = false
                     completion()
                 }
@@ -173,8 +169,10 @@ struct Narration3View: View {
     private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
         isTextVisible = true
         displayedText = text
+        let duration = audioManager.audioPlayer?.duration ?? 5
+        print(duration)
         audioManager.playAudio(filename: audio)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
             isTextVisible = false
             completion()
         }

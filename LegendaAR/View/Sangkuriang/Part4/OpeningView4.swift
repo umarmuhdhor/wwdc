@@ -1,13 +1,13 @@
 import SwiftUI
 import AVFoundation
 
-struct OpeningView: View {
+struct OpeningView4: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
     @State private var z = false
     @State private var displayedText = ""
-    let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
+    let fullText = "Sangkuriang couldn't find the deer he was hunting for, so he decided to take Tumang's heart instead."
     
     var body: some View {
         GeometryReader { geo in
@@ -58,11 +58,8 @@ struct OpeningView: View {
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                Narration3View(showNarrationView: $z)
+                HuntingGameView(showGameView: $z)
             }
-//            .fullScreenCover(isPresented: $z) {
-//                HuntingGameView(showGameView: $z)
-//            }
             .transaction { $0.disablesAnimations = true }
         }
         
@@ -97,7 +94,7 @@ struct OpeningView: View {
 
 
 // MARK: - Preview Providers
-struct OpeningView_Previews: PreviewProvider {
+struct OpeningView4_Previews: PreviewProvider {
     static var previews: some View {
         OpeningView(showOpeningView: .constant(true))
     }

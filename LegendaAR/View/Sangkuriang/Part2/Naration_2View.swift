@@ -116,7 +116,7 @@ struct Narration2View: View {
                                     handleAnswer(correct: false)
                                 }) {
                                     Text("Ignore the situation and avoid responsibility")
-                                        .font(.system(size: 20, weight: .semibold))
+                                        .font(.system(size: 24, weight: .bold))
                                         .foregroundColor(.white)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 60)
@@ -132,7 +132,7 @@ struct Narration2View: View {
                                     handleAnswer(correct: true)
                                 }) {
                                     Text("Take responsibility for his actions")
-                                        .font(.system(size: 20, weight: .semibold))
+                                        .font(.system(size: 24, weight: .bold))
                                         .foregroundColor(.white)
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 60)
@@ -192,7 +192,7 @@ struct Narration2View: View {
                     // Dialogue Text Views
                     if isTextVisible {
                         Text(displayedText)
-                            .font(.body)
+                            .font(.system(size: 24, weight: .bold))
                             .multilineTextAlignment(.center)
                             .padding()
                             .background(Color.white.opacity(0.6))
