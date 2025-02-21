@@ -36,7 +36,8 @@ struct Narration1_2View: View {
                     // Background
                     Image("background_narasi1")
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(contentMode: .fill) // Menyesuaikan dengan layar
+                        .frame(width: geo.size.width, height: geo.size.height)
                         .edgesIgnoringSafeArea(.all)
                     
                     // Character Images
@@ -44,7 +45,7 @@ struct Narration1_2View: View {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.5)
+                            .frame(width: geo.size.width * 0.3)
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                     }
                     
@@ -230,11 +231,15 @@ struct Narration1_2View: View {
                     }
                 }
                 .onAppear { startScene() }
+                
             }
         }
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showOpeningView2) {
             OpeningView2(showOpeningView: $showOpeningView2)
+        }
+        .onDisappear {
+            audioManager.stopAudio()
         }
     }
     

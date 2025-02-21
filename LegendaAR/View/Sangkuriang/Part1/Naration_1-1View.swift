@@ -32,7 +32,8 @@ struct Narration1View: View {
                 ZStack {
                     Image("background_narasi1")
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(contentMode: .fill) // Menyesuaikan dengan layar
+                        .frame(width: geo.size.width, height: geo.size.height)
                         .edgesIgnoringSafeArea(.all)
                     
                     HStack(spacing: 0) {
@@ -92,21 +93,18 @@ struct Narration1View: View {
                     Image("thread_spool")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: geo.size.width * 0.2)
+                        .frame(width: geo.size.width * 0.2) // 20% dari lebar layar
                         .offset(
-                            x: threadPositionx * geo.size.width / 390,
-                            y: threadPositiony * geo.size.height / 844
+                            x: geo.size.width * -0.2, // Posisi berdasarkan layar
+                            y: geo.size.height * 0.3
                         )
-                        .opacity(threadPositiony == -50 ? 0 : 1)
-                        .animation(.easeInOut(duration: 3.0), value: threadPositiony)
-                    
                     
                     // Dayang Sumbi
                     if isDayangSumbiVisible {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.5)
+                            .frame(width: geo.size.width * 0.3) // 50% dari lebar layar
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                             .transition(.opacity)
                             .onAppear {
@@ -161,12 +159,14 @@ struct Narration1View: View {
                         }
                     }
                     
-                    NavigationLink(
-                        destination: ARThreadGameView(state: treasureState)
-                            .edgesIgnoringSafeArea(.all),
-                        isActive: $navigateToARView
-                    ) { EmptyView() }
+                    
+                    //                    NavigationLink(
+                    //                        destination: ARThreadGameView(state: treasureState)
+                    //                            .edgesIgnoringSafeArea(.all),
+                    //                        isActive: $navigateToARView
+                    //                    ) { EmptyView() }
                 }
+                
                 .onAppear {
                     audioManager.playAudio(filename: "Narasi1")
                     let narrationDuration = audioManager.audioPlayer?.duration ?? 5
@@ -195,6 +195,11 @@ struct Narration1View: View {
                 }
                 .onDisappear {
                     audioManager.stopAudio()
+                    threadPositionx = 0
+                    threadPositiony = 0
+                }
+                .fullScreenCover(isPresented: $navigateToARView) {
+                    Narration1_2View(showNarrationView: $navigateToARView)
                 }
                 .forceLandscape()
             }

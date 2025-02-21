@@ -24,7 +24,7 @@ struct Narration3View: View {
                 ZStack {
                     Image("background_narasi1")
                         .resizable()
-                        .scaledToFill()
+                        .scaledToFit ()
                         .edgesIgnoringSafeArea(.all)
                     VStack {
                         HStack {
@@ -51,7 +51,7 @@ struct Narration3View: View {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.5)
+                            .frame(width: geo.size.width * 0.3)
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.1)
                             .transition(.opacity)
                     }
@@ -63,7 +63,7 @@ struct Narration3View: View {
                     }
                     
                     if isSangkuriangVisible {
-                        Image("Sangkuriang")
+                        Image("Sangkuriang_Child")
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.45)

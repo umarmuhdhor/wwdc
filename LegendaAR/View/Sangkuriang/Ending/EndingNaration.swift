@@ -78,7 +78,7 @@ struct EndingNaration: View {
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                RewardsView()
+                RewardsView(isPresented: $z)
             }
             .transaction { $0.disablesAnimations = true }
         }
@@ -106,7 +106,7 @@ struct EndingNaration: View {
         textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
-            speed: 0.02
+            speed: 0.0235
         ) {
             showNextButton = true
         }

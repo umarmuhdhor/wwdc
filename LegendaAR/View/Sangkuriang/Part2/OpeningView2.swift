@@ -10,7 +10,6 @@ struct OpeningView2: View {
     @State private var isAnimationComplete = false
     @State private var showNextButton = false
     
-    // Add state variable to store the animation timer
     @State private var textAnimationTimer: Timer?
     
     let fullText = "Dayang Sumbi keeps her promise and marries Tumang. Time passes, and she becomes pregnant. Her father, Sang Prabu, summons her to the palace."
@@ -23,7 +22,7 @@ struct OpeningView2: View {
                 VStack {
                     CloseButton(isPresented: $showOpeningView)
                         .onTapGesture {
-                            textAnimationTimer?.invalidate() // Invalidate timer when closing
+                            textAnimationTimer?.invalidate()
                             audioManager.stopAudio()
                             showOpeningView = false
                         }
@@ -56,7 +55,7 @@ struct OpeningView2: View {
                         
                         if showNextButton {
                             NextButton(title: "Next") {
-                                textAnimationTimer?.invalidate() // Invalidate timer when moving to next screen
+                                textAnimationTimer?.invalidate()
                                 audioManager.stopAudio()
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     z = true
@@ -72,7 +71,7 @@ struct OpeningView2: View {
                 setupAndPlay()
             }
             .onDisappear {
-                textAnimationTimer?.invalidate() // Invalidate timer when view disappears
+                textAnimationTimer?.invalidate()
                 audioManager.stopAudio()
             }
             .forceLandscape()
@@ -101,7 +100,6 @@ struct OpeningView2: View {
     }
     
     private func startAnimation() {
-        // Store the timer reference
         textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
@@ -112,17 +110,11 @@ struct OpeningView2: View {
     }
     
     private func skipNarration() {
-        // Invalidate the timer to stop the animation
         textAnimationTimer?.invalidate()
         textAnimationTimer = nil
-        
-        // Stop audio
+
         audioManager.stopAudio()
-        
-        // Show full text immediately
         displayedText = fullText
-        
-        // Show next button
         showNextButton = true
     }
 }

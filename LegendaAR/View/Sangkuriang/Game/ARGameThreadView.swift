@@ -106,11 +106,9 @@ struct ARThreadGameView: View {
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.all)
         .forceLandscape()
-        .background(
-            NavigationLink(destination: Narration1_2View(showNarrationView: $navigateToNextView), isActive: $navigateToNextView) {
-                EmptyView()
-            }
-                .hidden()
-        )
+        .fullScreenCover(isPresented: $navigateToNextView) {
+            Narration1_2View(showNarrationView: $navigateToNextView)
+        }
+        
     }
 }

@@ -33,7 +33,7 @@ struct Narration2View: View {
                     // Background
                     Image("background_part2")
                         .resizable()
-                        .scaledToFill()
+                        .scaledToFit()
                         .edgesIgnoringSafeArea(.all)
                     
                     // Character Images
@@ -49,7 +49,7 @@ struct Narration2View: View {
                         Image("DayangSumbi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.4)
+                            .frame(width: geo.size.width * 0.3)
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                     }
                     

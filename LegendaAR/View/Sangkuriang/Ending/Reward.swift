@@ -1,5 +1,6 @@
 import SwiftUI
 
+// MARK: - Models
 struct Reward: Identifiable {
     let id = UUID()
     let title: String
@@ -7,7 +8,11 @@ struct Reward: Identifiable {
     let imageName: String
 }
 
+
+// MARK: - RewardsView
 struct RewardsView: View {
+    @Binding var isPresented: Bool
+    
     let rewards: [Reward] = [
         Reward(title: "Sundanese Traditional Outfit", description: "The elegant attire worn by Dayang Sumbi and Sangkuriang.", imageName: "background_narasi1"),
         Reward(title: "Sundanese Song", description: "A beautiful traditional Sundanese melody.", imageName: "background_narasi1"),
@@ -19,7 +24,6 @@ struct RewardsView: View {
     ]
     
     private let columns = [GridItem(.adaptive(minimum: 300, maximum: 400), spacing: 20)]
-    
     @State private var isAnimating = false
     
     var body: some View {
@@ -32,7 +36,12 @@ struct RewardsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HeaderView()
+                HeaderView(
+                    backAction: {
+                        // This will now close the full screen cover and return to ContentView
+                        isPresented = false
+                    }
+                )
                 
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 20) {
@@ -61,7 +70,10 @@ struct RewardsView: View {
     }
 }
 
+// MARK: - Supporting Views
 struct HeaderView: View {
+    var backAction: () -> Void
+    
     var body: some View {
         HStack {
             Text("Achievements")
@@ -69,7 +81,20 @@ struct HeaderView: View {
                 .foregroundColor(.white)
                 .shadow(radius: 5)
                 .padding(.leading, 20)
+            
             Spacer()
+            
+            // Back/Home Button
+            Button(action: backAction) {
+                HStack {
+                    Image(systemName: "house.fill")
+                        .font(.system(size: 24))
+                    Text("Back to Story")
+                        .font(.headline)
+                }
+                .foregroundColor(.white)
+                .padding(.trailing, 20)
+            }
         }
         .padding(.vertical, 20)
     }
@@ -142,11 +167,5 @@ struct RewardTextView: View {
         }
         .padding(.horizontal, 15)
         .padding(.bottom, 15)
-    }
-}
-
-struct RewardsView_Previews: PreviewProvider {
-    static var previews: some View {
-        RewardsView()
     }
 }
