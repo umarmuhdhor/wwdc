@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     let stories: [Story] = [SangkuriangStory, DummyStory1, DummyStory2]
     
-    @State private var showOpeningView = false
+    @State private var showCharListView = false
     @State private var showCredits = false
     
     var body: some View {
@@ -59,7 +59,7 @@ struct ContentView: View {
                         .shadow(radius: 5)
                     
                     Button(action: {
-                        showOpeningView = true
+                        showCharListView = true
                     }) {
                         Text("Let's Start!")
                             .font(.title2)
@@ -73,8 +73,8 @@ struct ContentView: View {
                                     .shadow(radius: 5)
                             )
                     }
-                    .scaleEffect(showOpeningView ? 0.95 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: showOpeningView)
+                    .scaleEffect(showCharListView ? 0.95 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: showCharListView)
                 }
                 
                 // Credits Button
@@ -99,8 +99,8 @@ struct ContentView: View {
             }
         }
         .statusBar(hidden: true)
-        .fullScreenCover(isPresented: $showOpeningView) {
-            OpeningView(showOpeningView: $showOpeningView)
+        .fullScreenCover(isPresented: $showCharListView) {
+            CharacterListView(showCharListView: $showCharListView)
         }
         .sheet(isPresented: $showCredits) {
             CreditView()

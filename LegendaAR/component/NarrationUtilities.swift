@@ -22,8 +22,15 @@ class AudioPlayerManager: ObservableObject {
 }
 
 struct TextAnimation {
-    static func animateText(text: String, displayedText: Binding<String>, speed: Double = 0.05, completion: @escaping () -> Void) -> Timer {
+    static func animateText(
+        text: String,
+        displayedText: Binding<String>,
+        speed: Double = 0.05,
+        completion: @escaping () -> Void
+    ) -> Timer {
         var index = 0
+        displayedText.wrappedValue = "" // Reset text at start
+        
         let timer = Timer.scheduledTimer(withTimeInterval: speed, repeats: true) { timer in
             if index < text.count {
                 let character = text[text.index(text.startIndex, offsetBy: index)]
@@ -34,6 +41,7 @@ struct TextAnimation {
                 completion()
             }
         }
+        
         return timer
     }
 }

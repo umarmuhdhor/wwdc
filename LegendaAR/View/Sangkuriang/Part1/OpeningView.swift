@@ -7,6 +7,12 @@ struct OpeningView: View {
     @State private var showNarrationView = false
     @State private var z = false
     @State private var displayedText = ""
+    @State private var isAnimationComplete = false
+    @State private var showNextButton = false
+    
+    // Add state variable to store the animation timer
+    @State private var textAnimationTimer: Timer?
+    
     let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
     
     var body: some View {
@@ -17,6 +23,7 @@ struct OpeningView: View {
                 VStack {
                     CloseButton(isPresented: $showOpeningView)
                         .onTapGesture {
+                            textAnimationTimer?.invalidate() // Invalidate timer when closing
                             audioManager.stopAudio()
                             showOpeningView = false
                         }
@@ -34,38 +41,46 @@ struct OpeningView: View {
                     Spacer()
                     Spacer()
                 }
+                
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
-                        NextButton(title: "Skip") {
-                            audioManager.stopAudio()
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                z = true
+                        
+                        if !showNextButton {
+                            NextButton(title: "Skip Narration") {
+                                skipNarration()
+                            }
+                            .padding(.trailing, 20)
+                        }
+                        
+                        if showNextButton {
+                            NextButton(title: "Next") {
+                                textAnimationTimer?.invalidate() // Invalidate timer when moving to next screen
+                                audioManager.stopAudio()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    z = true
+                                }
                             }
                         }
-                        .padding(.trailing, geo.size.width * 0.08)
-                        .padding(.bottom, geo.size.height * 0.1)
                     }
+                    .padding(.trailing, geo.size.width * 0.08)
+                    .padding(.bottom, geo.size.height * 0.1)
                 }
-                
             }
             .onAppear {
                 setupAndPlay()
             }
             .onDisappear {
+                textAnimationTimer?.invalidate() // Invalidate timer when view disappears
                 audioManager.stopAudio()
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                Narration1View(showNarrationView: $z)
+                EndingNaration(showEndingView: $z)
             }
-//            .fullScreenCover(isPresented: $z) {
-//                HuntingGameView(showGameView: $z)
-//            }
             .transaction { $0.disablesAnimations = true }
         }
-        
     }
     
     private func setupAndPlay() {
@@ -77,8 +92,8 @@ struct OpeningView: View {
             audioManager.playAudio(filename: "Typing")
             let audioDuration = audioManager.audioPlayer?.duration ?? 5
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {
-                showNarrationView = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration) {
+                showNextButton = true
             }
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
@@ -86,20 +101,29 @@ struct OpeningView: View {
     }
     
     private func startAnimation() {
-        TextAnimation.animateText(
+        // Store the timer reference
+        textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
             speed: 0.09
-        ) {}
+        ) {
+            showNextButton = true
+        }
     }
-}
-
-
-
-// MARK: - Preview Providers
-struct OpeningView_Previews: PreviewProvider {
-    static var previews: some View {
-        OpeningView(showOpeningView: .constant(true))
+    
+    private func skipNarration() {
+        // Invalidate the timer to stop the animation
+        textAnimationTimer?.invalidate()
+        textAnimationTimer = nil
+        
+        // Stop audio
+        audioManager.stopAudio()
+        
+        // Show full text immediately
+        displayedText = fullText
+        
+        // Show next button
+        showNextButton = true
     }
 }
 
