@@ -16,32 +16,36 @@ struct CharacterListView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                // Enhanced Background
+                // Matching background gradient from opening view
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color(#colorLiteral(red: 0.2, green: 0.3, blue: 0.5, alpha: 1)),
-                        Color(#colorLiteral(red: 0.3, green: 0.2, blue: 0.5, alpha: 1))
+                        Color.blue.opacity(0.2),
+                        Color.blue.opacity(0.4)
                     ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
                 .ignoresSafeArea()
                 
-                // Decorative Background Elements
-                ForEach(0..<20) { i in
-                    Circle()
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 20, height: 20)
+                // Sun/Moon effect from opening view
+                Circle()
+                    .fill(Color.yellow.opacity(0.75))
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 20)
+                    .position(x: geo.size.width * 0.8, y: geo.size.height * 0.2)
+                
+                // Decorative Clouds from opening view
+                ForEach([
+                    (0.2, 0.15, 160, 80),
+                    (0.7, 0.25, 180, 90)
+                ], id: \.0) { x, y, width, height in
+                    Capsule()
+                        .fill(Color.white.opacity(0.5))
+                        .frame(width: width, height: height)
+                        .blur(radius: 10)
                         .position(
-                            x: CGFloat.random(in: 0...geo.size.width),
-                            y: CGFloat.random(in: 0...geo.size.height)
-                        )
-                        .opacity(isAnimating ? 0.6 : 0.2)
-                        .animation(
-                            Animation.easeInOut(duration: 2)
-                                .repeatForever()
-                                .delay(Double(i) * 0.1),
-                            value: isAnimating
+                            x: geo.size.width * x,
+                            y: geo.size.height * y
                         )
                 }
                 
@@ -51,6 +55,7 @@ struct CharacterListView: View {
                         Text("Characters")
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(.white)
+                            .shadow(radius: 5)
                             .padding(.leading, 30)
                         
                         Spacer()
@@ -83,25 +88,32 @@ struct CharacterListView: View {
                     
                     Spacer()
                     
-                    // Next Button
-                    NextButton(title: "Begin Journey") {
+                    // Next Button - matching opening view style
+                    Button(action: {
                         withAnimation(.easeInOut(duration: 0.5)) {
                             z = true
                         }
+                    }) {
+                        Text("Begin Journey")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 15)
+                            .background(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .fill(Color.yellow)
+                                    .shadow(radius: 5)
+                            )
                     }
                     .disabled(selectedCharacter == nil)
                     .opacity(selectedCharacter == nil ? 0.6 : 1)
                     .padding(.bottom, 40)
                 }
             }
-            .onAppear {
-                withAnimation {
-                    isAnimating = true
-                }
-            }
         }
         .fullScreenCover(isPresented: $z) {
-            OpeningView2(showOpeningView: $z)
+            EndingNaration(showOpeningView: $z)
         }
     }
 }
@@ -122,7 +134,7 @@ struct CharacterCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(isSelected ? Color.white : Color.clear, lineWidth: 3)
+                        .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
                 )
                 .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
                 .scaleEffect(isSelected ? 1.05 : 1.0)
@@ -133,6 +145,7 @@ struct CharacterCard: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
+                    .shadow(radius: 3)
                 
                 Text(description)
                     .font(.subheadline)
@@ -145,16 +158,7 @@ struct CharacterCard: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 25)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(#colorLiteral(red: 0.3, green: 0.4, blue: 0.6, alpha: 0.8)),
-                            Color(#colorLiteral(red: 0.4, green: 0.3, blue: 0.6, alpha: 0.8))
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .fill(Color.blue.opacity(0.3))
                 .shadow(color: Color.black.opacity(0.2), radius: 15, x: 0, y: 10)
         )
         .scaleEffect(isSelected ? 1.05 : 1.0)

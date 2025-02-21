@@ -1,12 +1,19 @@
+
 import SwiftUI
 import AVFoundation
 
 struct EndingNaration: View {
     @StateObject private var audioManager = AudioPlayerManager()
-    @Binding var showEndingView: Bool
+    @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
     @State private var z = false
     @State private var displayedText = ""
+    @State private var isAnimationComplete = false
+    @State private var showNextButton = false
+    
+    // Add state variable to store the animation timer
+    @State private var textAnimationTimer: Timer?
+    
     let fullText = "Just before Sangkuriang could finish his boat, the first light of dawn broke across the sky. Realizing he had failed, his fury consumed him. In a fit of rage, he kicked the boat with all his might.The great vessel overturned, its massive form turning to stone—forever known as Mount Tangkuban Perahu. Overwhelmed by his anger and sorrow, Sangkuriang vanished without a trace, leaving behind a legend that would be told for generations."
     
     var body: some View {
@@ -15,15 +22,15 @@ struct EndingNaration: View {
                 Color.black.ignoresSafeArea()
                 
                 VStack {
-                    CloseButton(isPresented: $showEndingView)
+                    CloseButton(isPresented: $showOpeningView)
                         .onTapGesture {
+                            textAnimationTimer?.invalidate() // Invalidate timer when closing
                             audioManager.stopAudio()
-                            showEndingView = false
+                            showOpeningView = false
                         }
                     Spacer()
                     
                     Text(displayedText)
-                        .font(.system(size: 24))
                         .foregroundColor(.white)
                         .font(.title)
                         .multilineTextAlignment(.center)
@@ -35,27 +42,38 @@ struct EndingNaration: View {
                     Spacer()
                     Spacer()
                 }
+                
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
-                        NextButton(title: "Skip") {
-                            audioManager.stopAudio()
-                            
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                z = true
+                        
+                        if !showNextButton {
+                            NextButton(title: "Skip Narration") {
+                                skipNarration()
+                            }
+                            .padding(.trailing, 20)
+                        }
+                        
+                        if showNextButton {
+                            NextButton(title: "Next") {
+                                textAnimationTimer?.invalidate() // Invalidate timer when moving to next screen
+                                audioManager.stopAudio()
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    z = true
+                                }
                             }
                         }
-                        .padding(.trailing, geo.size.width * 0.08)
-                        .padding(.bottom, geo.size.height * 0.1)
                     }
+                    .padding(.trailing, geo.size.width * 0.08)
+                    .padding(.bottom, geo.size.height * 0.1)
                 }
-                
             }
             .onAppear {
                 setupAndPlay()
             }
             .onDisappear {
+                textAnimationTimer?.invalidate() // Invalidate timer when view disappears
                 audioManager.stopAudio()
             }
             .forceLandscape()
@@ -64,7 +82,6 @@ struct EndingNaration: View {
             }
             .transaction { $0.disablesAnimations = true }
         }
-        
     }
     
     private func setupAndPlay() {
@@ -76,8 +93,8 @@ struct EndingNaration: View {
             audioManager.playAudio(filename: "Typing")
             let audioDuration = audioManager.audioPlayer?.duration ?? 5
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration + 2) {
-                showNarrationView = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration) {
+                showNextButton = true
             }
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
@@ -85,20 +102,43 @@ struct EndingNaration: View {
     }
     
     private func startAnimation() {
-        TextAnimation.animateText(
+        // Store the timer reference
+        textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
             speed: 0.02
-        ) {}
+        ) {
+            showNextButton = true
+        }
+    }
+    
+    private func skipNarration() {
+        // Invalidate the timer to stop the animation
+        textAnimationTimer?.invalidate()
+        textAnimationTimer = nil
+        
+        // Stop audio
+        audioManager.stopAudio()
+        
+        // Show full text immediately
+        displayedText = fullText
+        
+        // Show next button
+        showNextButton = true
     }
 }
-
-
 
 // MARK: - Preview Providers
 struct EndingNaration_Previews: PreviewProvider {
     static var previews: some View {
-        OpeningView(showOpeningView: .constant(true))
+        EndingNaration(showOpeningView: .constant(true))
     }
 }
+
+
+
+
+
+
+
 

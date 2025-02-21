@@ -9,11 +9,6 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background Image
-                Image("background1")  
-                    .edgesIgnoringSafeArea(.all)
-                
-                // Overlay gradient
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color.blue.opacity(0.2),

@@ -5,12 +5,25 @@ struct CreditView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            // Close Button di pojok kanan atas
+            HStack {
+                Spacer()
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.gray)
+                        .padding()
+                }
+            }
+            
             // Header
             Text("Credits")
                 .font(.largeTitle)
                 .bold()
-                .padding(.top, 20)
-            
+                .padding(.top, 10)
+                
             // Scrollable content
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -61,21 +74,6 @@ struct CreditView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 30)
-            }
-            
-            // Close Button
-            Button(action: {
-                dismiss()
-            }) {
-                Text("Close")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(10)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
             }
         }
         .background(Color(.systemGray6))

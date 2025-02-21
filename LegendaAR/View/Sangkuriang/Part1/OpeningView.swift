@@ -77,7 +77,7 @@ struct OpeningView: View {
             }
             .forceLandscape()
             .fullScreenCover(isPresented: $z) {
-                EndingNaration(showEndingView: $z)
+                Narration1View(showNarrationView: $z)
             }
             .transaction { $0.disablesAnimations = true }
         }
