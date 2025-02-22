@@ -5,7 +5,7 @@ import Combine
 
 class TreasureHuntState: ObservableObject {
     @Published var foundCount: Int = 0
-    @Published var scale: Float = 0.07 // Skala default
+    @Published var scale: Float = 0.07
     let totalCount: Int = 3
     static var cachedModel: ModelEntity?
     
@@ -36,7 +36,6 @@ struct ARThreadViewContainer: UIViewRepresentable {
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         arView.addGestureRecognizer(tapGesture)
         
-        // Spawn the first thread
         DispatchQueue.main.async {
             context.coordinator.spawnNextThread(in: arView)
         }
@@ -45,7 +44,6 @@ struct ARThreadViewContainer: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: ARView, context: Context) {
-        // Update scale when state.scale changes
         if let currentThread = context.coordinator.currentThread {
             currentThread.scale = SIMD3<Float>(state.scale, state.scale, state.scale)
         }
@@ -60,7 +58,6 @@ struct ARThreadViewContainer: UIViewRepresentable {
             super.init()
         }
         
-        // Function to spawn a new thread at a random position
         func spawnNextThread(in arView: ARView) {
             guard parent.state.foundCount < parent.state.totalCount else {
                 print("All threads found!")
@@ -76,7 +73,6 @@ struct ARThreadViewContainer: UIViewRepresentable {
                 return
             }
             
-            // Generate a random position
             let randomPosition = SIMD3<Float>(
                 Float.random(in: -0.5...0.5),
                 Float.random(in: 0...0.2),
@@ -84,9 +80,8 @@ struct ARThreadViewContainer: UIViewRepresentable {
             )
             model.position = randomPosition
             model.isEnabled = true
-            model.scale = SIMD3<Float>(parent.state.scale, parent.state.scale, parent.state.scale) // Set initial scale
+            model.scale = SIMD3<Float>(parent.state.scale, parent.state.scale, parent.state.scale) 
             
-            // Add the model to the scene
             let anchorEntity = AnchorEntity(world: randomPosition)
             anchorEntity.addChild(model)
             arView.scene.addAnchor(anchorEntity)
@@ -101,14 +96,11 @@ struct ARThreadViewContainer: UIViewRepresentable {
             
             let location = recognizer.location(in: arView)
             
-            // Check if the tap hits the current thread
             if let entity = arView.entity(at: location), entity == currentThread {
-                // Remove the current thread
                 entity.removeFromParent()
                 parent.state.foundCount += 1
                 print("Thread found! Moving to the next one...")
                 
-                // Spawn the next thread
                 spawnNextThread(in: arView)
             }
         }

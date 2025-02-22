@@ -7,7 +7,7 @@ struct CloseButton: View {
         HStack {
             Spacer()
             Button(action: {
-                isPresented = false // Tutup layar saat tombol diklik
+                isPresented = false 
             }) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title)

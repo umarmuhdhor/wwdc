@@ -3,27 +3,26 @@ import AVFoundation
 
 struct Narration5View: View {
     @StateObject private var audioManager = AudioPlayerManager()
+    
+    @State private var isDayangSumbiVisible = false
+    @State private var isSangkuriangVisible = false
     @State private var displayedText = ""
     @State private var isTextVisible = false
     @State private var isNextButtonVisible = false
-    @State private var isDayangSumbiVisible = false
-    @State private var isSangkuriangVisible = false
     @State private var navigateNextView = false
     
-    // Quiz states
     @State private var showQuiz = false
     @State private var timeRemaining = 10
     @State private var timer: Timer?
     @State private var showIncorrectAnswer = false
     @State private var showCorrectAnswer = false
     
+    private let sangkuriangText1 = "Here is the deer's heart, Mom!"
+    private let dayangSumbiText1 = "Wow, thank you, my son! But where is Tumang?"
+    private let sangkuriangText2 = "Hmm... Sorry, Mom, actually, this is Tumang's heart."
+    private let dayangSumbiText2 = "What?! You must be joking!"
+    
     @Binding var showNarrationView: Bool
-    
-    
-    let sangkuriangText1 = "Here is the deer's heart, Mom!"
-    let dayangSumbiText1 = "Wow, thank you, my son! But where is Tumang?"
-    let sangkuriangText2 = "Hmm... Sorry, Mom, actually, this is Tumang's heart."
-    let dayangSumbiText2 = "What?! You must be joking!"
     
     var body: some View {
         GeometryReader { geo in
@@ -37,53 +36,43 @@ struct Narration5View: View {
                 
                 VStack {
                     CloseButton(isPresented: $showNarrationView)
-                        .padding(.top, 20)
-                        .padding(.trailing, 20)
+                        .padding(.top, geo.size.height * 0.05)
+                        .padding(.trailing, geo.size.width * 0.05)
                         .onTapGesture {
                             audioManager.stopAudio()
                             showNarrationView = false
                         }
                     Spacer()
                 }
-                
                 if isDayangSumbiVisible {
                     Image("DayangSumbi")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 400)
-                        .offset(x: 150, y: 100)
+                        .frame(width: geo.size.width * 0.3)
+                        .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                         .transition(.opacity)
-                }
-                
-                if isTextVisible {
-                    Text(displayedText)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .background(Color.white.opacity(0.6))
-                        .cornerRadius(10)
-                        .offset(y: 130)
                 }
                 
                 if isSangkuriangVisible {
                     Image("Sangkuriang_Child")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 350)
-                        .offset(x: -150, y: 120)
+                        .frame(width: geo.size.width * 0.25)
+                        .offset(x: -geo.size.width * 0.2, y: geo.size.height * 0.35)
                         .transition(.opacity)
                 }
                 
+                if isTextVisible {
+                    DialogueTextView(text: displayedText)
+                        .offset(y: geo.size.height * 0.3)
+                }
                 
-                // Quiz overlay
                 if showQuiz {
                     Color.black
                         .opacity(0.7)
                         .edgesIgnoringSafeArea(.all)
                     
-                    VStack(spacing: 20) {
-                        // Timer circle in top left
+                    VStack {
                         HStack {
                             ZStack {
                                 Circle()
@@ -105,55 +94,54 @@ struct Narration5View: View {
                         }
                         
                         Spacer()
-                            .frame(height: 40)
-                        
-                        Text("Why was Dayang Sumbi angry at Sangkuriang?")
-                            .font(.system(size: 24, weight: .bold))
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.white)
+                        VStack(spacing: 30) {
+                            Text("Why was Dayang Sumbi angry at Sangkuriang?")
+                                .font(.system(size: 24, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 40)
+                            
+                            VStack(spacing: 20) {
+                                Button(action: {
+                                    handleAnswer(correct: false)
+                                }) {
+                                    Text("Sangkuriang didn't bring deer's heart")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                                
+                                Button(action: {
+                                    handleAnswer(correct: true)
+                                }) {
+                                    Text("Sangkuriang killed Tumang")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                            }
                             .padding(.horizontal, 40)
+                        }
                         
                         Spacer()
-                            .frame(height: 40)
-                        
-                        HStack(spacing: 20) {
-                            Button(action: {
-                                handleAnswer(correct: false)
-                            }) {
-                                Text("Sangkuriang didn't bring deer's heart")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .background(Color.blue.opacity(0.8))
-                                    .cornerRadius(12)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                            }
-                            
-                            Button(action: {
-                                handleAnswer(correct: true)
-                            }) {
-                                Text("Sangkuriang killed Tumang")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .background(Color.blue.opacity(0.8))
-                                    .cornerRadius(12)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                            }
-                        }
-                        .padding(.horizontal, 40)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 
-                // Incorrect answer overlay
                 if showIncorrectAnswer {
                     Color.black
                         .opacity(0.7)
@@ -201,8 +189,8 @@ struct Narration5View: View {
                                 audioManager.stopAudio()
                                 navigateNextView = true
                             }
-                            .padding(.trailing, 30)
-                            .padding(.bottom, 30)
+                            .padding(.trailing, geo.size.width * 0.05)
+                            .padding(.bottom, geo.size.height * 0.05)
                         }
                     }
                 }
@@ -227,23 +215,21 @@ struct Narration5View: View {
                 timer = nil
             }
             .fullScreenCover(isPresented: $navigateNextView) {
-                Narration6View(showNarrationView: $navigateNextView)
+                OpeningView6(showOpeningView: $navigateNextView)
             }
-            .forceLandscape()
-            
         }
         .edgesIgnoringSafeArea(.all)
-}
+    }
     
     private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
-        isTextVisible = true
-        displayedText = text
-        audioManager.playAudio(filename: audio)
-        let narrationDuration = audioManager.audioPlayer?.duration ?? 5
-        DispatchQueue.main.asyncAfter(deadline: .now() + narrationDuration) {
-            isTextVisible = false
-            completion()
-        }
+        DialogueManager.playDialogue(
+            text: text,
+            audio: audio,
+            audioManager: audioManager,
+            displayedText: $displayedText,
+            isTextVisible: $isTextVisible,
+            completion: completion
+        )
     }
     
     private func startQuiz() {
@@ -295,3 +281,5 @@ struct Narration5View_Previews: PreviewProvider {
         Narration5View(showNarrationView: .constant(true))
     }
 }
+
+

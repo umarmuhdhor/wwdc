@@ -1,6 +1,5 @@
 import SwiftUI
 
-// MARK: - Models
 struct Reward: Identifiable {
     let id = UUID()
     let title: String
@@ -8,8 +7,6 @@ struct Reward: Identifiable {
     let imageName: String
 }
 
-
-// MARK: - RewardsView
 struct RewardsView: View {
     @Binding var isPresented: Bool
     
@@ -38,7 +35,6 @@ struct RewardsView: View {
             VStack(spacing: 0) {
                 HeaderView(
                     backAction: {
-                        // This will now close the full screen cover and return to ContentView
                         isPresented = false
                     }
                 )
@@ -70,7 +66,6 @@ struct RewardsView: View {
     }
 }
 
-// MARK: - Supporting Views
 struct HeaderView: View {
     var backAction: () -> Void
     
@@ -84,7 +79,6 @@ struct HeaderView: View {
             
             Spacer()
             
-            // Back/Home Button
             Button(action: backAction) {
                 HStack {
                     Image(systemName: "house.fill")

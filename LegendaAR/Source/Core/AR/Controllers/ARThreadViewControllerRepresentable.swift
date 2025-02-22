@@ -3,8 +3,6 @@ import ARKit
 import RealityKit
 import Combine
 
-
-// Updated ARViewControllerRepresentable to include state
 struct ARThreadViewControllerRepresentable: UIViewControllerRepresentable {
     @ObservedObject var state: TreasureHuntState
     

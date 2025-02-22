@@ -17,14 +17,12 @@ struct ContentView: View {
                 )
                 .edgesIgnoringSafeArea(.all)
                 
-                // Sun/Moon Effect
                 Circle()
                     .fill(Color.yellow.opacity(0.75))
                     .frame(width: 120, height: 120)
                     .blur(radius: 20)
                     .position(x: geometry.size.width * 0.8, y: geometry.size.height * 0.2)
                 
-                // Decorative Clouds
                 ForEach([
                     (0.2, 0.15, 160, 80),
                     (0.7, 0.25, 180, 90)
@@ -70,7 +68,6 @@ struct ContentView: View {
                     .animation(.easeInOut(duration: 0.2), value: showCharListView)
                 }
                 
-                // Credits Button
                 VStack {
                     Spacer()
                     HStack {

@@ -7,17 +7,13 @@ struct ARThreadGameView: View {
     
     var body: some View {
         ZStack {
-            // AR View takes full screen
             ARThreadViewControllerRepresentable(state: state)
                 .edgesIgnoringSafeArea(.all)
                 .ignoresSafeArea()
             
-            // Overlay content
             GeometryReader { geometry in
                 VStack {
-                    // Top Bar (Back Button + Counter + Zoom Button)
                     HStack {
-                        // Back button
                         Button(action: {
                             presentationMode.wrappedValue.dismiss()
                         }) {
@@ -34,7 +30,6 @@ struct ARThreadGameView: View {
                         
                         Spacer()
                         
-                        // Zoom button
                         Button(action: {
                             state.scale += 0.1
                         }) {
@@ -48,7 +43,6 @@ struct ARThreadGameView: View {
                         }
                         .padding(.trailing, 10)
                         
-                        // Counter display
                         Text("Threads: \(state.foundCount)/\(state.totalCount)")
                             .font(.title2)
                             .fontWeight(.semibold)
@@ -63,8 +57,6 @@ struct ARThreadGameView: View {
                     .padding(.top, geometry.safeAreaInsets.top + 10)
                     
                     Spacer()
-                    
-                    // Instructions or Completion Message
                     if state.foundCount < state.totalCount {
                         Text("Tap to find the threads!")
                             .font(.headline)

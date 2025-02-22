@@ -5,7 +5,6 @@ struct CreditView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Close Button di pojok kanan atas
             HStack {
                 Spacer()
                 Button(action: {
@@ -18,16 +17,13 @@ struct CreditView: View {
                 }
             }
             
-            // Header
             Text("Credits")
                 .font(.largeTitle)
                 .bold()
                 .padding(.top, 10)
                 
-            // Scrollable content
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // App Development
                     VStack(alignment: .leading, spacing: 10) {
                         Text("App Development")
                             .font(.title2)

@@ -13,7 +13,6 @@ struct Narration2View: View {
     @State private var isNextButtonVisible = false
     @State private var navigateToNextScene = false
     
-    // Quiz states
     @State private var showQuiz = false
     @State private var timeRemaining = 10
     @State private var timer: Timer?
@@ -29,7 +28,6 @@ struct Narration2View: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                // Background
                 Image("background_part2")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -37,21 +35,20 @@ struct Narration2View: View {
                     .clipped()
                     .edgesIgnoringSafeArea(.all)
                 
-                // Character Images
                 if isSangPrabuVisible {
                     Image("SangPrabu")
                         .resizable()
                         .scaledToFit()
                         .frame(width: geo.size.width * 0.5)
-                        .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.15)
+                        .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.2)
                 }
                 
                 if isDayangSumbiVisible {
                     Image("DayangSumbi_Hamil")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: geo.size.width * 0.3)
-                        .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
+                        .frame(width: geo.size.width * 0.25)
+                        .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.24)
                 }
                 
                 if isTumangHumanVisible {
@@ -68,18 +65,16 @@ struct Narration2View: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: geo.size.width * 0.25)
-                        .offset(x: geo.size.width * 0.35, y: geo.size.height * 0.32)
+                        .offset(x: geo.size.width * 0.35, y: geo.size.height * 0.35)
                         .transition(.opacity)
                 }
                 
-                // Quiz overlay
                 if showQuiz {
                     Color.black
                         .opacity(0.7)
                         .edgesIgnoringSafeArea(.all)
                     
-                    VStack(spacing: 20) {
-                        // Timer circle in top left
+                    VStack {
                         HStack {
                             ZStack {
                                 Circle()
@@ -101,57 +96,55 @@ struct Narration2View: View {
                         }
                         
                         Spacer()
-                            .frame(height: 40)
                         
-                        Text("Will Tumang admit his mistake?")
-                            .font(.system(size: 24, weight: .bold))
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 40)
-                        
-                        Spacer()
-                            .frame(height: 40)
-                        
-                        HStack(spacing: 20) {
-                            Button(action: {
-                                handleAnswer(correct: false)
-                            }) {
-                                Text("Ignore the situation and avoid responsibility")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .background(Color.blue.opacity(0.8))
-                                    .cornerRadius(12)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                            }
+                        VStack(spacing: 30) {
+                            Text("Will Tumang admit his mistake?")
+                                .font(.system(size: 24, weight: .bold))
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 40)
                             
-                            Button(action: {
-                                handleAnswer(correct: true)
-                            }) {
-                                Text("Take responsibility for his actions")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .background(Color.blue.opacity(0.8))
-                                    .cornerRadius(12)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
+                            VStack(spacing: 20) {
+                                Button(action: {
+                                    handleAnswer(correct: true)
+                                }) {
+                                    Text("Take responsibility for his actions")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                                
+                                Button(action: {
+                                    handleAnswer(correct: false)
+                                }) {
+                                    Text("Ignore the situation and avoid responsibility")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 60)
+                                        .background(Color.blue.opacity(0.8))
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
                             }
+                            .padding(.horizontal, 40)
                         }
-                        .padding(.horizontal, 40)
                         
                         Spacer()
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                
-                // Incorrect answer overlay
+
                 if showIncorrectAnswer {
                     Color.black
                         .opacity(0.7)
@@ -190,7 +183,6 @@ struct Narration2View: View {
                         .padding(.horizontal, 40)
                 }
                 
-                // Dialogue Text Views
                 if isTextVisible {
                     Text(displayedText)
                         .font(.body)
@@ -202,7 +194,6 @@ struct Narration2View: View {
                         .offset(y: geo.size.height * 0.3)
                 }
                 
-                // UI Controls
                 VStack {
                     CloseButton(isPresented: $showNarrationView)
                         .padding(.top, geo.size.height * 0.02)
@@ -237,7 +228,7 @@ struct Narration2View: View {
         .edgesIgnoringSafeArea(.all)
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $navigateToNextScene) {
-            Narration3View(showNarrationView: $navigateToNextScene)
+            OpeningView3(showOpeningView: $navigateToNextScene)
         }
     }
     

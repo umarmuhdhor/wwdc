@@ -1,7 +1,7 @@
 import SwiftUI
 import AVFoundation
 
-struct OpeningView: View {
+struct OpeningView3: View {
     @StateObject private var audioManager = AudioPlayerManager()
     @Binding var showOpeningView: Bool
     @State private var showNarrationView = false
@@ -12,7 +12,7 @@ struct OpeningView: View {
     
     @State private var textAnimationTimer: Timer?
     
-    let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
+    let fullText = "They were banished from the palace and lived in a small hut in the forest."
     
     var body: some View {
         GeometryReader { geo in
@@ -26,8 +26,6 @@ struct OpeningView: View {
                             audioManager.stopAudio()
                             showOpeningView = false
                         }
-                        .padding(.top, geo.size.height * 0.02)
-                        .padding(.horizontal, geo.size.width * 0.05)
                     Spacer()
                     
                     Text(displayedText)
@@ -77,11 +75,8 @@ struct OpeningView: View {
                 audioManager.stopAudio()
             }
             .forceLandscape()
-            //            .fullScreenCover(isPresented: $z) {
-            //                ShipPuzzleGameView(showPuzzleView: $z)
-            //            }
             .fullScreenCover(isPresented: $z) {
-                Narration1View(showNarrationView: $z)
+                Narration3View(showNarrationView: $z)
             }
             .transaction { $0.disablesAnimations = true }
         }
@@ -108,7 +103,7 @@ struct OpeningView: View {
         textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
-            speed: 0.09
+            speed: 0.07
         ) {
             showNextButton = true
         }
@@ -117,9 +112,20 @@ struct OpeningView: View {
     private func skipNarration() {
         textAnimationTimer?.invalidate()
         textAnimationTimer = nil
+
         audioManager.stopAudio()
         displayedText = fullText
         showNextButton = true
     }
 }
+
+struct OpeningView3_Previews: PreviewProvider {
+    static var previews: some View {
+        OpeningView3(showOpeningView: .constant(true))
+    }
+}
+
+
+
+
 

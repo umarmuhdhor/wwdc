@@ -51,7 +51,7 @@ struct CharacterListView: View {
                 VStack(spacing: 20) {
                     HStack {
                         Text("Characters")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: geo.size.width * 0.05, weight: .bold))
                             .foregroundColor(.white)
                             .shadow(radius: 5)
                             .padding(.leading, 30)
@@ -59,23 +59,57 @@ struct CharacterListView: View {
                         Spacer()
                         
                         CloseButton(isPresented: $showCharListView)
-                            .padding(.trailing, 30)
+                        
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                z = true
+                            }
+                        }) {
+                            Text("Begin Journey")
+                                .font(.system(size: geo.size.width * 0.02, weight: .semibold))
+                                .foregroundColor(.black)
+                                .padding(.vertical, geo.size.height * 0.02)
+                                .padding(.horizontal, geo.size.width * 0.05) 
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color.yellow)
+                                        .shadow(radius: 5)
+                                )
+                                .padding(.trailing, 20)
+                        }
                     }
                     .padding(.top, 20)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 25) {
                             ForEach(characters, id: \.name) { character in
-                                CharacterCard(
-                                    name: character.name,
-                                    imageName: character.imageName,
-                                    description: character.description,
-                                    isSelected: selectedCharacter == character.name
-                                )
-                                .onTapGesture {
-                                    withAnimation(.spring()) {
-                                        selectedCharacter = character.name
+                                VStack(spacing: 15) {
+                                    Image(character.imageName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: geo.size.width * 0.25, height: geo.size.height * 0.3)
+                                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    
+                                    VStack(spacing: 8) {
+                                        Text(character.name)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                            .shadow(radius: 3)
+                                        
+                                        Text(character.description)
+                                            .font(.subheadline)
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .multilineTextAlignment(.center)
+                                            .frame(width: 200)
+                                            .lineLimit(3)
                                     }
                                 }
+                                .padding(20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color.blue.opacity(0.3))
+                                        .shadow(color: Color.black.opacity(0.2), radius: 15, x: 0, y: 10)
+                                )
                             }
                         }
                         .padding(.horizontal, 30)
@@ -83,25 +117,7 @@ struct CharacterListView: View {
                     }
                     
                     Spacer()
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            z = true
-                        }
-                    }) {
-                        Text("Begin Journey")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 15)
-                            .background(
-                                RoundedRectangle(cornerRadius: 25)
-                                    .fill(Color.yellow)
-                                    .shadow(radius: 5)
-                            )
-                    }
-                    .disabled(selectedCharacter == nil)
-                    .opacity(selectedCharacter == nil ? 0.6 : 1)
+                    
                     .padding(.bottom, 40)
                 }
             }
@@ -112,48 +128,5 @@ struct CharacterListView: View {
     }
 }
 
-struct CharacterCard: View {
-    let name: String
-    let imageName: String
-    let description: String
-    let isSelected: Bool
-    
-    var body: some View {
-        VStack(spacing: 15) {
-            Image(imageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 250)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 3)
-                )
-                .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
-                .scaleEffect(isSelected ? 1.05 : 1.0)
-            
-            VStack(spacing: 8) {
-                Text(name)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .shadow(radius: 3)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .frame(width: 200)
-                    .lineLimit(3)
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 25)
-                .fill(Color.blue.opacity(0.3))
-                .shadow(color: Color.black.opacity(0.2), radius: 15, x: 0, y: 10)
-        )
-        .scaleEffect(isSelected ? 1.05 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
-    }
-}
+
+

@@ -16,14 +16,12 @@ struct Narration1_2View: View {
     @State private var isThreadTransferred = false
     @State private var showOpeningView2 = false
     
-    // Quiz states
     @State private var showQuiz = false
     @State private var timeRemaining = 10
     @State private var timer: Timer?
     @State private var showIncorrectAnswer = false
     @State private var showCorrectAnswer = false
     
-    // Constants for dialogue
     private let tumangDialogue = "Princess, here is your thread"
     private let dayangDialogue = "Thank you, Tumang. As I promised, I will marry you."
     
@@ -58,7 +56,6 @@ struct Narration1_2View: View {
                             .transition(.move(edge: .leading))
                     }
                     
-                    // Thread Images
                     if isThreadVisible && !isThreadTransferred {
                         Image("thread_spool")
                             .resizable()
@@ -76,14 +73,12 @@ struct Narration1_2View: View {
                             .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.1)
                     }
                     
-                    // Quiz overlay section with centered content
                     if showQuiz {
                         Color.black
                             .opacity(0.7)
                             .edgesIgnoringSafeArea(.all)
                         
                         VStack {
-                            // Timer at the top
                             HStack {
                                 ZStack {
                                     Circle()
@@ -106,7 +101,6 @@ struct Narration1_2View: View {
                             
                             Spacer()
                             
-                            // Quiz content - centered in the middle
                             VStack(spacing: 30) {
                                 Text("What should Dayang Sumbi do after finding out that her servant retrieved her thread?")
                                     .font(.system(size: 24, weight: .bold))
@@ -115,7 +109,6 @@ struct Narration1_2View: View {
                                     .padding(.horizontal, 40)
                                 
                                 VStack(spacing: 20) {
-                                    // First button
                                     Button(action: {
                                         handleAnswer(correct: true)
                                     }) {
@@ -132,7 +125,6 @@ struct Narration1_2View: View {
                                             )
                                     }
                                     
-                                    // Second button
                                     Button(action: {
                                         handleAnswer(correct: false)
                                     }) {
@@ -157,7 +149,6 @@ struct Narration1_2View: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
-                    // Incorrect answer overlay
                     if showIncorrectAnswer {
                         Color.black
                             .opacity(0.7)
@@ -196,13 +187,11 @@ struct Narration1_2View: View {
                             .padding(.horizontal, 40)
                     }
                     
-                    // Dialogue Text Views
                     if isTextVisible || isDayangTextVisible {
                         DialogueTextView(text: displayedText)
                             .offset(y: geo.size.height * 0.3)
                     }
                     
-                    // UI Controls
                     VStack {
                         CloseButton(isPresented: $showNarrationView)
                             .padding(.top, geo.size.height * 0.02)

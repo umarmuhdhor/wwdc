@@ -10,6 +10,8 @@ struct Narration3View: View {
     @State private var isSangkuriangVisible = false
     @State private var showOpeningView4 = false
     @State private var isSkipVisible = false
+    @State private var isNarrationSkipped = false
+    @State private var isDialogDone = false
     @Binding var showNarrationView: Bool
     
     @State private var textAnimationTimer: Timer?
@@ -41,6 +43,7 @@ struct Narration3View: View {
                             CloseButton(isPresented: $showNarrationView)
                                 .onTapGesture {
                                     audioManager.stopAudio()
+                                    isDialogDone = true
                                     showNarrationView = false
                                 }
                         }
@@ -54,7 +57,7 @@ struct Narration3View: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.3)
-                            .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.1)
+                            .offset(x: geo.size.width * 0.2, y: geo.size.height * 0.2)
                             .transition(.opacity)
                     }
                     
@@ -68,8 +71,8 @@ struct Narration3View: View {
                         Image("Sangkuriang_Child")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: geo.size.width * 0.2)
-                            .offset(x: -geo.size.width * 0.2, y: geo.size.height * 0.12)
+                            .frame(width: geo.size.width * 0.25)
+                            .offset(x: -geo.size.width * 0.2, y: geo.size.height * 0.35)
                             .transition(.opacity)
                     }
                     
@@ -103,11 +106,10 @@ struct Narration3View: View {
             .edgesIgnoringSafeArea(.all)
     }
     
-    // Function to start narration
     private func startNarration() {
         audioManager.playAudio(filename: "Narasi3")
         let narrationDuration = audioManager.audioPlayer?.duration ?? 5
-        
+        guard !isNarrationSkipped else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
             isTextVisible = true
             isSkipVisible = true
@@ -115,9 +117,10 @@ struct Narration3View: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     isSkipVisible = false
                     isDayangSumbiVisible = true
+                    guard !isDialogDone else { return }
                     playDialogue(text: dayangSumbiText, audio: "DayangSumbi3_1") {
                         isSangkuriangVisible = true
-                        
+                        guard !isDialogDone else { return }
                         playDialogue(text: sangkuriangText, audio: "Sangkuriang3_1") {
                             isNextButtonVisible = true
                         }
@@ -127,32 +130,26 @@ struct Narration3View: View {
         }
     }
     
-    // Function to skip narration
     private func skipNarration() {
-        // Stop all ongoing processes
         textAnimationTimer?.invalidate()
         textAnimationTimer = nil
         audioManager.stopAudio()
         
-        // Reset states
+        isNarrationSkipped = true
+        
         displayedText = ""
         isTextVisible = false
         isSkipVisible = false
         
-        // Skip to Dayang Sumbi's dialogue
         isDayangSumbiVisible = true
-        
-        // Play Dayang's dialogue immediately
         playDialogue(text: dayangSumbiText, audio: "DayangSumbi3_1") {
             isSangkuriangVisible = true
-            
             playDialogue(text: sangkuriangText, audio: "Sangkuriang3_1") {
                 isNextButtonVisible = true
             }
         }
     }
     
-    // Function to show narration text with animation
     private func showNarrationText(_ text: String, completion: @escaping () -> Void) {
         isTextVisible = true
         displayedText = ""
@@ -175,8 +172,8 @@ struct Narration3View: View {
         }
     }
     
-    // Function to play dialogue
     private func playDialogue(text: String, audio: String, completion: @escaping () -> Void) {
+        audioManager.stopAudio()
         isTextVisible = true
         displayedText = text
         audioManager.playAudio(filename: audio)

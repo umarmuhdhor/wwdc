@@ -4,14 +4,13 @@ import AVFoundation
 
 struct EndingNaration: View {
     @StateObject private var audioManager = AudioPlayerManager()
-    @Binding var showOpeningView: Bool
+    @Binding var showEndingView: Bool
     @State private var showNarrationView = false
     @State private var z = false
     @State private var displayedText = ""
     @State private var isAnimationComplete = false
     @State private var showNextButton = false
-    
-    // Add state variable to store the animation timer
+
     @State private var textAnimationTimer: Timer?
     
     let fullText = "Just before Sangkuriang could finish his boat, the first light of dawn broke across the sky. Realizing he had failed, his fury consumed him. In a fit of rage, he kicked the boat with all his might.The great vessel overturned, its massive form turning to stone—forever known as Mount Tangkuban Perahu. Overwhelmed by his anger and sorrow, Sangkuriang vanished without a trace, leaving behind a legend that would be told for generations."
@@ -22,11 +21,11 @@ struct EndingNaration: View {
                 Color.black.ignoresSafeArea()
                 
                 VStack {
-                    CloseButton(isPresented: $showOpeningView)
+                    CloseButton(isPresented: $showEndingView)
                         .onTapGesture {
                             textAnimationTimer?.invalidate() // Invalidate timer when closing
                             audioManager.stopAudio()
-                            showOpeningView = false
+                            showEndingView = false
                         }
                     Spacer()
                     
@@ -57,7 +56,7 @@ struct EndingNaration: View {
                         
                         if showNextButton {
                             NextButton(title: "Next") {
-                                textAnimationTimer?.invalidate() // Invalidate timer when moving to next screen
+                                textAnimationTimer?.invalidate()
                                 audioManager.stopAudio()
                                 withAnimation(.easeInOut(duration: 0.3)) {
                                     z = true
@@ -73,7 +72,7 @@ struct EndingNaration: View {
                 setupAndPlay()
             }
             .onDisappear {
-                textAnimationTimer?.invalidate() // Invalidate timer when view disappears
+                textAnimationTimer?.invalidate()
                 audioManager.stopAudio()
             }
             .forceLandscape()
@@ -102,7 +101,6 @@ struct EndingNaration: View {
     }
     
     private func startAnimation() {
-        // Store the timer reference
         textAnimationTimer = TextAnimation.animateText(
             text: fullText,
             displayedText: $displayedText,
@@ -113,25 +111,17 @@ struct EndingNaration: View {
     }
     
     private func skipNarration() {
-        // Invalidate the timer to stop the animation
         textAnimationTimer?.invalidate()
         textAnimationTimer = nil
-        
-        // Stop audio
         audioManager.stopAudio()
-        
-        // Show full text immediately
         displayedText = fullText
-        
-        // Show next button
         showNextButton = true
     }
 }
 
-// MARK: - Preview Providers
 struct EndingNaration_Previews: PreviewProvider {
     static var previews: some View {
-        EndingNaration(showOpeningView: .constant(true))
+        EndingNaration(showEndingView: .constant(true))
     }
 }
 

@@ -4,7 +4,6 @@ import GameplayKit
 class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     private var audioManager = AudioPlayerManager()
     
-    // MARK: - Properties
     private var sangkuriang: SKSpriteNode!
     private var bow: SKSpriteNode!
     private var tumang: SKSpriteNode!
@@ -12,7 +11,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     private var bowString: SKShapeNode?
     private var trajectoryPoints: [SKShapeNode] = []
     
-    // Game State Properties
     private var isAiming = false
     private var startPosition: CGPoint?
     private var bowStringRestPosition: CGPoint?
@@ -23,12 +21,10 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     private var dialogBox: SKNode?
     private var winSound: SKAction!
     
-    // Configuration Constants
     private let maxShootingDistance: CGFloat = 1000
     private let springConstant: CGFloat = 0.8
     private let maxPullbackDistance: CGFloat = 100.0
     
-    // MARK: - Game States
     enum GameState {
         case aiming
         case shooting
@@ -37,7 +33,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         case missed
     }
     
-    // MARK: - Scene Setup
     override func didMove(to view: SKView) {
         setupPhysicsWorld()
         setupBackground()
@@ -61,16 +56,14 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func setupCharacters() {
-        // Sangkuriang setup
         sangkuriang = SKSpriteNode(imageNamed: "Sangkuriang_Child")
         sangkuriang.position = CGPoint(x: frame.midX - 300, y: 120)
         sangkuriang.setScale(0.5)
         sangkuriang.zPosition = 1
         addChild(sangkuriang)
         
-        // Tumang setup - Modified to be at the bottom
         tumang = SKSpriteNode(imageNamed: "Tumang_Dog")
-        tumang.position = CGPoint(x: frame.midX + 400, y: 70) // Fixed position at bottom
+        tumang.position = CGPoint(x: frame.midX + 400, y: 70)
         tumang.setScale(0.3)
         tumang.zPosition = 1
         
@@ -126,7 +119,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         self.physicsBody?.categoryBitMask = PhysicsCategory.boundary
     }
     
-    // MARK: - Touch Handling
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard gameState == .aiming, let touch = touches.first else { return }
         initialTouchPosition = touch.location(in: self)
@@ -193,9 +185,9 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         arrow.physicsBody?.affectedByGravity = true
         
         let angle = arrow.zRotation
-        let springVelocity = shootingPower * 3000 // Meningkatkan kecepatan tembakan
-        let velocityX = cos(angle) * springVelocity * 1.5 // Meningkatkan kecepatan horizontal
-        let velocityY = sin(angle) * springVelocity * 1.5 // Meningkatkan kecepatan vertikal
+        let springVelocity = shootingPower * 3000 
+        let velocityX = cos(angle) * springVelocity * 1.5
+        let velocityY = sin(angle) * springVelocity * 1.5
         
         let limitedVelocityX = min(abs(velocityX), maxShootingDistance) * sign(velocityX)
         let limitedVelocityY = min(abs(velocityY), maxShootingDistance) * sign(velocityY)
@@ -227,7 +219,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // MARK: - Trajectory Prediction
     private func updateTrajectoryPrediction(from startPoint: CGPoint, angle: CGFloat, power: CGFloat) {
         trajectoryPoints.forEach { $0.removeFromParent() }
         trajectoryPoints.removeAll()
@@ -273,7 +264,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // MARK: - Collision Handling
     func didBegin(_ contact: SKPhysicsContact) {
         guard gameState == .shooting else { return }
         
@@ -299,7 +289,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    // MARK: - Game State Management
     private func checkMiss() {
         guard gameState == .shooting else { return }
         gameState = .missed
@@ -343,17 +332,14 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     private func showGameComplete() {
-        // Play audio
         audioManager.playAudio(filename: "right")
 
-        // Create a semi-transparent black background
         let background = SKSpriteNode(color: .black, size: CGSize(width: frame.width, height: frame.height))
         background.alpha = 0.7
         background.zPosition = 11
         background.position = CGPoint(x: frame.midX, y: frame.midY)
         addChild(background)
 
-        // Create the "Game Complete" label
         let gameCompleteLabel = SKLabelNode(text: "🎉  You Win !!!  🎉")
         gameCompleteLabel.fontName = "HelveticaNeue-Bold"
         gameCompleteLabel.fontSize = 24
@@ -362,12 +348,10 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         gameCompleteLabel.horizontalAlignmentMode = .center
         gameCompleteLabel.verticalAlignmentMode = .center
 
-        // Calculate the size of the label background
         let padding: CGFloat = 30
         let labelWidth = gameCompleteLabel.frame.width + padding
         let labelHeight = gameCompleteLabel.frame.height + padding
 
-        // Create a rounded rectangle background for the label
         let labelBackground = SKShapeNode(rect: CGRect(x: -labelWidth / 2, y: -labelHeight / 2, width: labelWidth, height: labelHeight), cornerRadius: 15)
         labelBackground.fillColor = .green
         labelBackground.strokeColor = .white
@@ -376,36 +360,29 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
         labelBackground.zPosition = 11
         labelBackground.position = CGPoint(x: frame.midX, y: frame.midY)
 
-        // Add the label to the background
         labelBackground.addChild(gameCompleteLabel)
 
-        // Add the label background to the scene
         addChild(labelBackground)
 
-        // Send notification that the game is completed
         NotificationCenter.default.post(name: Notification.Name("GameCompleted"), object: nil)
     }
     
     private func resetScene() {
-        // Remove game elements
         arrow?.removeFromParent()
         dialogBox?.removeFromParent()
         trajectoryPoints.forEach { $0.removeFromParent() }
         trajectoryPoints.removeAll()
         
-        // Reset bow string
         let stringPath = CGMutablePath()
         stringPath.move(to: bowStringRestPosition!)
         stringPath.addLine(to: bowStringRestPosition!)
         bowString?.path = stringPath
         
-        // Reset Tumang
         tumang.physicsBody?.isDynamic = false
         tumang.physicsBody?.affectedByGravity = false
         tumang.position = CGPoint(x: frame.midX + 400, y: tumang.size.height / 2)
         tumang.zRotation = 0
         
-        // Reset game state
         gameState = .aiming
         isAiming = false
         shootingPower = 0
@@ -413,7 +390,6 @@ class HuntingGameScene: SKScene, SKPhysicsContactDelegate {
 }
 
 
-// MARK: - Physics Categories
 struct PhysicsCategory {
     static let none: UInt32 = 0
     static let arrow: UInt32 = 0b1
