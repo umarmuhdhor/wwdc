@@ -7,12 +7,12 @@ struct CharacterListView: View {
     @State private var isAnimating = false
     
     let characters = [
-        (name: "Dayang Sumbi", imageName: "DayangSumbi", description: "A beautiful and skilled weaver, cursed to unknowingly fall in love with her own son."),
-        (name: "Sang Prabu", imageName: "SangPrabu", description: "A wise and just king who ruled the kingdom."),
-        (name: "Sangkuriang", imageName: "Sangkuriang", description: "A legendary warrior who unknowingly fell in love with his own mother."),
-        (name: "Sangkuriang (Child)", imageName: "Sangkuriang_Child", description: "The young version of Sangkuriang, unaware of his tragic destiny."),
-        (name: "Tumang", imageName: "Tumang", description: "A loyal royal servant who was destined to be with Dayang Sumbi."),
-        (name: "Tumang (Dog)", imageName: "Tumang_Dog", description: "Tumang, who was cursed to live as a dog.")
+        (name: "Dayang Sumbi", imageName: "DayangSumbi"),
+        (name: "Sang Prabu", imageName: "SangPrabu"),
+        (name: "Sangkuriang", imageName: "Sangkuriang"),
+        (name: "Sangkuriang (Child)", imageName: "Sangkuriang_Child"),
+        (name: "Tumang", imageName: "Tumang"),
+        (name: "Tumang (Dog)", imageName: "Tumang_Dog")
     ]
 
     
@@ -95,13 +95,6 @@ struct CharacterListView: View {
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
                                             .shadow(radius: 3)
-                                        
-                                        Text(character.description)
-                                            .font(.subheadline)
-                                            .foregroundColor(.white.opacity(0.8))
-                                            .multilineTextAlignment(.center)
-                                            .frame(width: 200)
-                                            .lineLimit(3)
                                     }
                                 }
                                 .padding(20)

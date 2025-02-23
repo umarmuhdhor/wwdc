@@ -106,6 +106,7 @@ struct OpeningView6: View {
             speed: 0.07
         ) {
             showNextButton = true
+            audioManager.stopAudio() 
         }
     }
     

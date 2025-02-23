@@ -95,6 +95,9 @@ struct ARThreadGameView: View {
             }
             .edgesIgnoringSafeArea(.all)
         }
+        .onDisappear {
+            TreasureHuntState.cachedModel = nil
+        }
         .navigationBarHidden(true)
         .ignoresSafeArea()
         .edgesIgnoringSafeArea(.all)

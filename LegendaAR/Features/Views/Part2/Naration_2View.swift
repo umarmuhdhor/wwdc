@@ -5,6 +5,7 @@ struct Narration2View: View {
     @StateObject private var audioManager = AudioPlayerManager()
     
     @State private var isSangPrabuVisible = true
+    @State private var isSangPrabuAngryVisible = false
     @State private var isDayangSumbiVisible = true
     @State private var isTumangHumanVisible = false
     @State private var isTumangDogVisible = false
@@ -37,6 +38,14 @@ struct Narration2View: View {
                 
                 if isSangPrabuVisible {
                     Image("SangPrabu")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: geo.size.width * 0.5)
+                        .offset(x: -geo.size.width * 0.25, y: geo.size.height * 0.2)
+                }
+                
+                if isSangPrabuAngryVisible {
+                    Image("SangPrabu_Angry")
                         .resizable()
                         .scaledToFit()
                         .frame(width: geo.size.width * 0.5)
@@ -169,7 +178,7 @@ struct Narration2View: View {
                         .opacity(0.7)
                         .edgesIgnoringSafeArea(.all)
                     
-                    Text("RIGHT !!! Tumang Take responsibility for his actions")
+                    Text("Correct! Tumang Take responsibility for his actions")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -224,6 +233,9 @@ struct Narration2View: View {
             }
             .edgesIgnoringSafeArea(.all)
             .onAppear { startScene() }
+        }
+        .onDisappear {
+            audioManager.stopAudio()
         }
         .edgesIgnoringSafeArea(.all)
         .navigationBarHidden(true)
@@ -299,6 +311,8 @@ struct Narration2View: View {
             displayedText: $displayedText,
             isTextVisible: $isTextVisible
         ) {
+            isSangPrabuAngryVisible = true
+            isSangPrabuVisible = false
             DialogueManager.playDialogue(
                 text: fullTextSangPrabu2,
                 audio: "SangPrabu_2",

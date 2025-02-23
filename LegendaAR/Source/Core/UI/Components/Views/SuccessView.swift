@@ -16,7 +16,7 @@ struct SuccessView: View {
                 Text("You've successfully built the ship!")
                     .foregroundColor(.white)
                 
-                Button("Play Again") {
+                Button("Next") {
                     dismissAction()
                     navigateNextView = true
                 }

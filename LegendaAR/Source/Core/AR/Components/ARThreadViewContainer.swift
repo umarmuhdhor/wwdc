@@ -36,6 +36,10 @@ struct ARThreadViewContainer: UIViewRepresentable {
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap))
         arView.addGestureRecognizer(tapGesture)
         
+        NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { _ in
+            arView.session.pause()
+        }
+        
         DispatchQueue.main.async {
             context.coordinator.spawnNextThread(in: arView)
         }

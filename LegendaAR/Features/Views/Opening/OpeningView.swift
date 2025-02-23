@@ -12,7 +12,7 @@ struct OpeningView: View {
     
     @State private var textAnimationTimer: Timer?
     
-    let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal....."
+    let fullText = "In the misty highlands of West Java, a mountain stands as a silent witness to a tale of love, betrayal."
     
     var body: some View {
         GeometryReader { geo in
@@ -77,9 +77,6 @@ struct OpeningView: View {
                 audioManager.stopAudio()
             }
             .forceLandscape()
-            //            .fullScreenCover(isPresented: $z) {
-            //                ShipPuzzleGameView(showPuzzleView: $z)
-            //            }
             .fullScreenCover(isPresented: $z) {
                 Narration1View(showNarrationView: $z)
             }
@@ -94,11 +91,6 @@ struct OpeningView: View {
             try audioSession.setActive(true)
             
             audioManager.playAudio(filename: "Typing")
-            let audioDuration = audioManager.audioPlayer?.duration ?? 5
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + audioDuration) {
-                showNextButton = true
-            }
         } catch {
             print("Failed to set up audio session: \(error.localizedDescription)")
         }
@@ -111,6 +103,7 @@ struct OpeningView: View {
             speed: 0.09
         ) {
             showNextButton = true
+            audioManager.stopAudio() 
         }
     }
     
@@ -122,4 +115,3 @@ struct OpeningView: View {
         showNextButton = true
     }
 }
-

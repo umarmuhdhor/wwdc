@@ -50,20 +50,9 @@ struct CreditView: View {
                             .bold()
                         
                         Text("- Background music: [YouTube Link](https://youtu.be/q-gp58dQiSQ?si=yVzF-GJpONWplBRP)")
-                        Text("- Clock sound effect: [YouTube Link](https://youtu.be/J0sTjeK92gI?si=8Qt2sxqktBGTPej_)")
-                        Text("- Lose sound effect: [YouTube Link](https://youtu.be/CQeezCdF4mk?si=TZeaSmHIGCmr66YY)")
-                        Text("- Winning sound effect: [YouTube Link](https://youtu.be/rr5CMS2GtCY?si=8hZ9Z_aEPeH5bMP6)")
+                        Text("- Sound effect: [Pixabay](https://pixabay.com)")
                     }
                       
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Special Thanks")
-                            .font(.title2)
-                            .bold()
-                        
-                        Text("- Open Source Libraries")
-                        Text("- Community Contributors")
-                        Text("- Beta Testers")
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 30)

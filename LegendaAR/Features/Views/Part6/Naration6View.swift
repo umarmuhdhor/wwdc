@@ -67,8 +67,8 @@ struct Narration6View: View {
                     Image("Sangkuriang")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: geo.size.width * 0.45)
-                        .offset(x: -geo.size.width * 0.1, y: geo.size.height * 0.15)
+                        .frame(width: geo.size.width * 0.5)
+                        .offset(x: -geo.size.width * 0.15, y: geo.size.height * 0.2)
                         .transition(.opacity)
                 }
                 
