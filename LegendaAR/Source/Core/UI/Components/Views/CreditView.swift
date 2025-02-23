@@ -34,7 +34,6 @@ struct CreditView: View {
                         Text("- Story content inspired by Indonesian folklore")
                     }
                     
-                    // Assets and Tools
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Assets and Tools")
                             .font(.title2)
@@ -45,7 +44,6 @@ struct CreditView: View {
                         Text("- Dialog audio generated using **ElevenLabs**")
                     }
                     
-                    // Audio Credits
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Audio Credits")
                             .font(.title2)
@@ -56,8 +54,7 @@ struct CreditView: View {
                         Text("- Lose sound effect: [YouTube Link](https://youtu.be/CQeezCdF4mk?si=TZeaSmHIGCmr66YY)")
                         Text("- Winning sound effect: [YouTube Link](https://youtu.be/rr5CMS2GtCY?si=8hZ9Z_aEPeH5bMP6)")
                     }
-                    
-                    // Special Thanks
+                      
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Special Thanks")
                             .font(.title2)

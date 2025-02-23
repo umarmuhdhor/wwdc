@@ -1,11 +1,3 @@
-//
-//  EnhancedInstructionsView.swift
-//  LegendaAR
-//
-//  Created by unimdp on 22/02/25.
-//
-
-
 import SwiftUI
 
 struct EnhancedInstructionsView: View {

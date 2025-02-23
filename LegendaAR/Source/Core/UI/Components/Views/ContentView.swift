@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var showCharListView = false
     @State private var showCredits = false
+    @State private var showStory = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -37,7 +38,6 @@ struct ContentView: View {
                         )
                 }
                 
-                // Main Content
                 VStack(spacing: 20) {
                     Text("The Legend of")
                         .font(.system(size: 48, weight: .bold))
@@ -73,6 +73,23 @@ struct ContentView: View {
                     HStack {
                         Spacer()
                         Button(action: {
+                            showStory = true
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "book.closed.fill")
+                                    .font(.caption)
+                                Text("Story")
+                                    .font(.caption)
+                            }
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                        }
+                        .padding(.trailing, 8)
+                        
+                        Button(action: {
                             showCredits = true
                         }) {
                             Text("Credits")
@@ -83,7 +100,7 @@ struct ContentView: View {
                                 .cornerRadius(10)
                                 .shadow(radius: 5)
                         }
-                        .padding()
+                        .padding(.trailing)
                     }
                 }
             }
@@ -94,6 +111,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showCredits) {
             CreditView()
+        }
+        .sheet(isPresented: $showStory) {
+            StoryBehindView()
         }
     }
 }
