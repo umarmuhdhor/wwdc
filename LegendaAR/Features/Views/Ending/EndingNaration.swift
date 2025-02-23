@@ -23,7 +23,7 @@ struct EndingNaration: View {
                 VStack {
                     CloseButton(isPresented: $showEndingView)
                         .onTapGesture {
-                            textAnimationTimer?.invalidate() // Invalidate timer when closing
+                            textAnimationTimer?.invalidate()
                             audioManager.stopAudio()
                             showEndingView = false
                         }

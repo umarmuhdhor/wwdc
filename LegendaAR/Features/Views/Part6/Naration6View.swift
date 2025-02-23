@@ -25,7 +25,7 @@ struct Narration6View: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Image("background_narasi1")
+                Image("background_part4")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: geo.size.width, height: geo.size.height)
